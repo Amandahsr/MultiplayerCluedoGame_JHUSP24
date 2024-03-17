@@ -13,33 +13,55 @@ class chatDatabase:
     Database class to handle storage of in-game chat system messages.
     """
 
-    def __init__(self, client=None):
+    def __init__(self):
         """
-        Creates a new chat database to use and connect.
+        Properties of database.
+        """
+        self.client = None
+        self.database = None
+        self.chatMessages = None
+        self.game_active_status = False
+
+    def connect_chat_database(self, client=None) -> None:
+        """
+        Connects server to chat database and initializes database properties.
         """
         if client is None:
             # Use default mongoDB server
-            self.server_url = "localhost:27017"
-            self.client = MongoClient(self.server_url)
+            server_url = "localhost:27017"
+            self.client = MongoClient(server_url)
         else:
+            # Use user specified server
             self.client = client
 
+        # Switch on game active status
         self.database = self.client["cluelessChatDatabase"]
-        self.chat_messages = self.database["chatMessages"]
+        self.chatMessages = self.database["chatMessages"]
+        self.game_active_status = True
 
-    def get_all_chat_messages(self, game_ID: int):
+    def disconnect_chat_database(self) -> None:
+        """
+        Disconnects server from chat database.
+        """
+        # Disconnect client
+        self.client.close()
+
+        # Switch off game active status
+        self.game_active_status = False
+
+    def get_all_chat_messages(self):
         """
         Returns all chat messages stored in the database for a particular game.
         """
         # Query the database using game_ID
-        messages = self.chat_messages.find({"game_ID": game_ID})
+        messages = self.chatMessages.find()
 
         # Sort messages by earliest time to make messages more readable
         messages = messages.sort("message_time")
 
         return messages
 
-    def store_chat_message(self, game_ID: int, player_ID: int, player_Name: str, message: str) -> None:
+    def store_chat_message(self, player_ID: int, player_Name: str, message: str) -> None:
         """
         Stores a chat system message in the database.
         """
@@ -47,12 +69,11 @@ class chatDatabase:
         msg_timeZone = timezone("US/Eastern")
 
         # Generate message ID for retrieval purposes: message ID is based on the number of messages in database
-        msg_ID = self.chat_messages.count_documents({"game_ID": game_ID}) + 1
+        msg_ID = self.chatMessages.count_documents({}) + 1
 
         # Message information that will be stored in database
         # Note that mongoDB will also add a "_id" key generated internally for them to identify uniquely.
         message_info = {
-            "game_ID": game_ID,
             "player_ID": player_ID,
             "player_Name": player_Name,
             "message_ID": msg_ID,
@@ -61,18 +82,18 @@ class chatDatabase:
         }
 
         # Store message information in database.
-        self.chat_messages.insert_one(message_info)
+        self.chatMessages.insert_one(message_info)
 
-    def get_specific_message(self, game_ID: int, msg_ID: int):
+    def get_specific_message(self, msg_ID: int):
         """
         Returns a message stored in the database based on the game_ID and msg_ID.
         """
         # Query database using game_ID and msg_ID
-        message = self.chat_messages.find_one({"game_ID": game_ID, "message_ID": msg_ID})
+        message = self.chatMessages.find_one({"message_ID": msg_ID})
 
         # If the message was found, return it
         if message:
             return message
         else:
             # Return error message stating ID is not found.
-            return "Message associated with game ID and msg ID is not found in database."
+            return "Message associated with msg ID is not found in database."
