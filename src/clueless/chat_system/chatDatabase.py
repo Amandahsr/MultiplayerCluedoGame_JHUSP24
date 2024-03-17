@@ -13,13 +13,17 @@ class chatDatabase:
     Database class to handle storage of in-game chat system messages.
     """
 
-    def __init__(self):
+    def __init__(self, client=None):
         """
         Creates a new chat database to use and connect.
         """
-        # Use default mongoDB server
-        self.server_url = "localhost:27017"
-        self.client = MongoClient(self.server_url)
+        if client is None:
+            # Use default mongoDB server
+            self.server_url = "localhost:27017"
+            self.client = MongoClient(self.server_url)
+        else:
+            self.client = client
+
         self.database = self.client["cluelessChatDatabase"]
         self.chat_messages = self.database["chatMessages"]
 
@@ -43,9 +47,10 @@ class chatDatabase:
         msg_timeZone = timezone("US/Eastern")
 
         # Generate message ID for retrieval purposes: message ID is based on the number of messages in database
-        msg_ID = len(chatDatabase.get_all_chat_messages(self, game_ID))
+        msg_ID = self.chat_messages.count_documents({"game_ID": game_ID}) + 1
 
         # Message information that will be stored in database
+        # Note that mongoDB will also add a "_id" key generated internally for them to identify uniquely.
         message_info = {
             "game_ID": game_ID,
             "player_ID": player_ID,
@@ -60,7 +65,7 @@ class chatDatabase:
 
     def get_specific_message(self, game_ID: int, msg_ID: int):
         """
-        Returns a message stored in the database based on the msg_ID.
+        Returns a message stored in the database based on the game_ID and msg_ID.
         """
         # Query database using game_ID and msg_ID
         message = self.chat_messages.find_one({"game_ID": game_ID, "message_ID": msg_ID})
@@ -69,5 +74,5 @@ class chatDatabase:
         if message:
             return message
         else:
-            # If no message was found with the given ID, return None or an appropriate message
-            return "Message associated with msg ID is not found."
+            # Return error message stating ID is not found.
+            return "Message associated with game ID and msg ID is not found in database."
