@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "clueless"
+version = "0.1.0"
+description = "A multiplayer version of the popular boardgame, Cluedo."
+authors = ["Amanda Ho", "Catherine Hanafin", "Christopher Soto", "Hannah Holbert", "Phillip Phan"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pymongo = "^4.6.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
