@@ -21,6 +21,7 @@ def testdb():
         {
             "player_ID": 1,
             "player_Name": "Tom",
+            "character_Name": "Scarlett",
             "message_ID": 1,
             "message_time": datetime.now(timezone("US/Eastern")),
             "message": "test message 1",
@@ -30,6 +31,7 @@ def testdb():
         {
             "player_ID": 1,
             "player_Name": "Tom",
+            "character_Name": "Scarlett",
             "message_ID": 2,
             "message_time": datetime.now(timezone("US/Eastern")),
             "message": "test message 2",
@@ -39,6 +41,7 @@ def testdb():
         {
             "player_ID": 2,
             "player_Name": "Jack",
+            "character_Name": "Johnson",
             "message_ID": 3,
             "message_time": datetime.now(timezone("US/Eastern")),
             "message": "test message 3",
@@ -83,9 +86,10 @@ def test_store_chat_message(testdb):
     # Test parameters
     player_ID = 1
     player_Name = "Tom"
+    character_Name = "Scarlett"
     message = "test message"
 
-    testdb.store_chat_message(player_ID=player_ID, player_Name=player_Name, message=message)
+    testdb.store_chat_message(player_ID=player_ID, player_Name=player_Name, character_Name=character_Name, message=message)
 
     # Retrieve specific stored message for test check
     result = testdb.chatMessages.find_one({"message_ID": 4})
@@ -93,6 +97,7 @@ def test_store_chat_message(testdb):
     assert list(result.keys()) == [
         "player_ID",
         "player_Name",
+        "character_Name",
         "message_ID",
         "message_time",
         "message",
