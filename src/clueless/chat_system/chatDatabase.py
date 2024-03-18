@@ -61,7 +61,7 @@ class chatDatabase:
 
         return messages
 
-    def store_chat_message(self, player_ID: int, player_Name: str, message: str) -> None:
+    def store_chat_message(self, player_ID: int, player_Name: str, character_Name: str, message: str) -> None:
         """
         Stores a chat system message in the database.
         """
@@ -76,6 +76,7 @@ class chatDatabase:
         message_info = {
             "player_ID": player_ID,
             "player_Name": player_Name,
+            "character_Name": character_Name,
             "message_ID": msg_ID,
             "message_time": datetime.now(msg_timeZone),
             "message": message,
