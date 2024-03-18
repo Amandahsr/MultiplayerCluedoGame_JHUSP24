@@ -1,25 +1,42 @@
-import sys
 import socket
 from _thread import *
+import sys
 
-server = ""
+
+# Set up server address and port
+server = "localhost"
 port = 5555
 
+# Create a socket object
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+# Bind the socket to the server address and port
 try:
     s.bind((server, port))
 except socket.error as e:
     str(e)
 
+# Listen for incoming connections
 s.listen(2)
 print("Waiting for a connection, Server Started")
 
-def threaded_client(conn, client_list):
-    conn.send(str.encode("Connected"))
-    reply = ""
+# Define available characters and selected characters lists
+available_characters = ["Miss Scarlet", "Colonel Mustard", "Mrs. White", "Mr. Green", "Mrs. Peacock", "Professor Plum"]
+selected_characters = []
+
+# List to store client connections
+connections = []
+
+# Function to handle each client connection
+def threaded_client(conn):
+    global available_characters, selected_characters
+
+    # Send a connection message to the client
+    conn.send(str.encode("Connected to server"))
+
     while True:
         try:
+            # Receive data from the client
             data = conn.recv(2048)
             reply = data.decode("utf-8")
 
@@ -27,31 +44,47 @@ def threaded_client(conn, client_list):
                 print("Disconnected")
                 break
             else:
-                print("Received: ", reply)
-                print("Sending : ", reply)
-                if (reply not in client_list):
-                    client_list += reply + ','
-                #print(client_list)
+                if reply.startswith("select_character:"):
+                    # Extract the character name from the received message
+                    character_name = reply.split(":")[1]
 
+                    # Check if the character is available
+                    if character_name in available_characters:
+                        # Remove the character from the available list
+                        available_characters.remove(character_name)
+                        # Add the character to the selected list
+                        selected_characters.append(character_name)
+                        print(f"{character_name} has been selected.")
+
+                        # Prepare a lobby update message with the selected characters
+                        lobby_update = "lobby_update:" + ",".join(selected_characters)
+
+                        # Send the lobby update message to all connected clients
+                        for client in connections:
+                            client.send(str.encode(lobby_update))
+                else:
+                    print("Received: ", reply)
             print('REPLY: ', reply)
-            conn.sendall(str.encode(client_list))
-            print(client_list)
-        except Exception as error:
-            print(error)
+        except Exception as e:
+            print("Error handling data from client:", e)
             break
 
     print("Lost connection")
     conn.close()
 
+# Main server loop
 while True:
-    global client_list
-    client_list = ""
-
+    # Accept a new connection
     conn, addr = s.accept()
     print("Connected to:", addr)
 
-    start_new_thread(threaded_client, (conn, client_list))
-    
+    # Add the connection to the list
+    connections.append(conn)
+
+    # Start a new thread to handle the client connection
+    start_new_thread(threaded_client, (conn,))
+
+
 '''
 class Server:
     game_board = {
