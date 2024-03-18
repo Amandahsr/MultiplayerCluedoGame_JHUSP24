@@ -13,7 +13,6 @@ class Client:
         gameUI = UI()
         screen = pygame.display.set_mode((gameUI.screen_width, gameUI.screen_height), pygame.RESIZABLE)
         pygame.display.set_caption("ClueLess")
-        # background = pygame.image.load("boardgame.webp")
 
         server = "localhost"
         port = 5555
@@ -23,10 +22,12 @@ class Client:
         except:
             pass
 
-        user_text = ''
-        while True:
+        MAIN_MENU = True
+        LOBBY = False
+
+        if (MAIN_MENU):
             font = pygame.font.Font('freesansbold.ttf', 32)
-            text = font.render("Welcome! What is your name?", True, (255,255,255), (0,0,0))
+            text = font.render("Welcome! Please select a character:", True, (255,255,255), (0,0,0))
             textRect = text.get_rect()
             textRect.center = (gameUI.screen_width // 2, gameUI.screen_height // 2)
             screen.blit(text, textRect)
@@ -37,6 +38,7 @@ class Client:
             pp_button = Button(screen, "Professor Plum", 600, 550)
             pp_button.draw_button()
 
+        while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
@@ -46,14 +48,36 @@ class Client:
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
-                    if(ms_button.check_button(mouse_x, mouse_y)):
-                        s.send(ms_button.get_msg().encode())
-                    if(pp_button.check_button(mouse_x, mouse_y)):
-                        s.send(pp_button.get_msg().encode())
+                    if (MAIN_MENU):
+                        if(ms_button.check_button(mouse_x, mouse_y)):
+                            s.send(ms_button.get_msg().encode())
+                            screen.fill((0,0,0))
+                            MAIN_MENU = False
+                            LOBBY = True
 
-            # screen.fill((0,0,0))
+                            data = s.recv(1024)
+                            # Check to see if data received by server:
+                            print(data.decode())
 
-            pygame.display.flip()
+                            # Server sends back the Player the Client is registered as:
+                            data = s.recv(1024)
+                            print(data.decode())
+                            
+                        if(pp_button.check_button(mouse_x, mouse_y)):
+                            s.send(pp_button.get_msg().encode())
+                            screen.fill((0,0,0))
+                            MAIN_MENU = False
+                            LOBBY = True
+
+                            data = s.recv(1024)
+                            # Check to see if data received by server:
+                            print(data.decode())
+
+                            # Server sends back the Player the Client is registered as:
+                            data = s.recv(1024)
+                            print(data.decode())
+
+            pygame.display.update()
 
 def main():
     C = Client()

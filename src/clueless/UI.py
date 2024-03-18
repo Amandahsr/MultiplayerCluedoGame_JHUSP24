@@ -12,6 +12,15 @@ class UI():
         self.screen_height = 800
         self.bg_color = (230,230,230)
 
+# class Text():
+#     def __init__(self, screen, msg, x, y):
+            
+#             font = pygame.font.Font('freesansbold.ttf', 32)
+#             text = font.render("Welcome! Please select a character:", True, (255,255,255), (0,0,0))
+#             textRect = text.get_rect()
+#             textRect.center = (gameUI.screen_width // 2, gameUI.screen_height // 2)
+#             screen.blit(text, textRect)
+
 class Button():
     msg = ''
 
@@ -19,7 +28,7 @@ class Button():
         self.screen = screen
         self.screen_rect = screen.get_rect()
         self.width, self.height = 200, 50
-        self.button_color = (0,255,0)
+        self.button_color = (0,0,0)
         self.text_color = (255,255,255)
         self.font = pygame.font.SysFont(None, 48)
         self.rect = pygame.Rect(0, 0, self.width, self.height)

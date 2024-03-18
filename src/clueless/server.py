@@ -14,7 +14,8 @@ except socket.error as e:
 
 s.listen(2)
 print("Waiting for a connection, Server Started")
-def threaded_client(conn):
+
+def threaded_client(conn, client_list):
     conn.send(str.encode("Connected"))
     reply = ""
     while True:
@@ -28,19 +29,28 @@ def threaded_client(conn):
             else:
                 print("Received: ", reply)
                 print("Sending : ", reply)
+                if (reply not in client_list):
+                    client_list += reply + ','
+                #print(client_list)
 
-            conn.sendall(str.encode(reply))
-        except:
+            print('REPLY: ', reply)
+            conn.sendall(str.encode(client_list))
+            print(client_list)
+        except Exception as error:
+            print(error)
             break
 
     print("Lost connection")
     conn.close()
 
 while True:
+    global client_list
+    client_list = ""
+
     conn, addr = s.accept()
     print("Connected to:", addr)
 
-    start_new_thread(threaded_client, (conn,))
+    start_new_thread(threaded_client, (conn, client_list))
     
 '''
 class Server:
