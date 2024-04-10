@@ -17,7 +17,7 @@ class chatDatabase:
         """
         Properties of database.
         """
-        self.client = None
+        self.client = []
         self.database = None
         self.chatMessages = None
         self.game_active_status = False
@@ -29,10 +29,10 @@ class chatDatabase:
         if client is None:
             # Use default mongoDB server
             server_url = "localhost:27017"
-            self.client = MongoClient(server_url)
+            self.client.append(MongoClient(server_url))
         else:
             # Use user specified server
-            self.client = client
+            self.client.append(client)
 
         # Switch on game active status
         self.database = self.client["cluelessChatDatabase"]
@@ -43,8 +43,9 @@ class chatDatabase:
         """
         Disconnects server from chat database.
         """
-        # Disconnect client
-        self.client.close()
+        # Disconnect clients
+        for client in self.client:
+            client.close()
 
         # Switch off game active status
         self.game_active_status = False
