@@ -6,6 +6,7 @@ Due to these reasons, it will be used for the chat system storage.
 from pymongo import MongoClient
 from pytz import timezone
 from datetime import datetime
+from typing import Dict
 
 
 class chatDatabase:
@@ -92,26 +93,26 @@ class chatDatabase:
         # Store message information in database.
         self.chatMessages.insert_one(message_info)
 
-    def get_specific_message(self, game_state_category: str, character_Name: str = None):
+    def get_specific_message(self, filter_flags: Dict):
         """
-        Returns a message stored in the database based on game_state_category and optional character_Name flags.
+        Returns a message stored in the database based on message filter flags. 
+        Valid filter flags are "player_Name", "character_Name", "message_ID", "message_time", "game_state_category" and "message".
+        filter_flags parameter should be structured as {filter_flag: filter_flag_pattern_match} e.g. {"player_Name": "Bob"}.
         """
-        # Query database using only game_state_category if character_Name is None
-        if not character_Name:
-            message = self.chatMessages.find({"game_state_category": game_state_category})
+        # Check if filter_flag is valid
+        valid_filter_flags = set(
+            "player_Name", "character_Name", "message_ID", "message_time", "game_state_category", "message"
+        )
+        queried_filter_flags = filter_flags.keys()
+        if not set(queried_filter_flags).issubset(valid_filter_flags):
+            return f"There are filter flags in {queried_filter_flags} that are not valid."
 
-        else:
-            message = self.chatMessages.find(
-                {"game_state_category": game_state_category, "character_Name": character_Name}
-            )
+        # Query database using filter flags match
+        message = self.chatMessages.find(filter_flags)
 
         # If the message was found, return it
         if message:
             return message
         else:
             # Specify no messages if none found associated to filter flags
-            if not character_Name:
-                filter_flags = f"{game_state_category} and {character_Name}"
-            else:
-                filter_flags = game_state_category
-                return f"No messages related to {filter_flags} were found."
+            return f"No messages related to {filter_flags} were found."
