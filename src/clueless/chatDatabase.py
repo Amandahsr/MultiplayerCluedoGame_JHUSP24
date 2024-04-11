@@ -62,9 +62,15 @@ class chatDatabase:
 
         return messages
 
-    def store_chat_message(self, player_ID: int, player_Name: str, character_Name: str, message: str) -> None:
+    def store_chat_message(self, player_Name: str, character_Name: str, game_state_category: str, message: str) -> None:
         """
         Stores a chat system message in the database.
+
+        Parameters
+        player_Name: username/display name of player.
+        character_Name: name of in-game character selected by player.
+        game_state_category: Game category in which message is classified under. Available categories are "doorway movement", "secret passage movement", "suggestion", "accusation".
+        message: Details of the game state change.
         """
         # Ensures timestamp follows EST
         msg_timeZone = timezone("US/Eastern")
@@ -75,27 +81,37 @@ class chatDatabase:
         # Message information that will be stored in database
         # Note that mongoDB will also add a "_id" key generated internally for them to identify uniquely.
         message_info = {
-            "player_ID": player_ID,
             "player_Name": player_Name,
             "character_Name": character_Name,
             "message_ID": msg_ID,
             "message_time": datetime.now(msg_timeZone),
+            "game_state_category": game_state_category,
             "message": message,
         }
 
         # Store message information in database.
         self.chatMessages.insert_one(message_info)
 
-    def get_specific_message(self, msg_ID: int):
+    def get_specific_message(self, game_state_category: str, character_Name: str = None):
         """
-        Returns a message stored in the database based on the game_ID and msg_ID.
+        Returns a message stored in the database based on game_state_category and optional character_Name flags.
         """
-        # Query database using game_ID and msg_ID
-        message = self.chatMessages.find_one({"message_ID": msg_ID})
+        # Query database using only game_state_category if character_Name is None
+        if not character_Name:
+            message = self.chatMessages.find({"game_state_category": game_state_category})
+
+        else:
+            message = self.chatMessages.find(
+                {"game_state_category": game_state_category, "character_Name": character_Name}
+            )
 
         # If the message was found, return it
         if message:
             return message
         else:
-            # Return error message stating ID is not found.
-            return "Message associated with msg ID is not found in database."
+            # Specify no messages if none found associated to filter flags
+            if not character_Name:
+                filter_flags = f"{game_state_category} and {character_Name}"
+            else:
+                filter_flags = game_state_category
+                return f"No messages related to {filter_flags} were found."
