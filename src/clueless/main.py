@@ -26,6 +26,7 @@ class Client:
         self.main_menu()
 
     def main_menu(self):
+        print("Start of main_menu function")  # Debug print
         # Display the main menu UI
         font = pygame.font.Font('freesansbold.ttf', 32)
         text = font.render("Welcome! Please select a character:", True, (255,255,255), (0,0,0))
@@ -50,6 +51,7 @@ class Client:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    print("Quit event detected")  # Debug print
                     running = False
                     pygame.quit()
                     sys.exit()
@@ -58,20 +60,26 @@ class Client:
                     for button in buttons:
                         if button.check_button(mouse_x, mouse_y):
                             self.s.send(f"select_character:{button.msg}".encode())
+                            print("Character selection sent to server")  # Debug print
                             running = False
                             self.lobby()
 
             pygame.display.update()
-
+            
     def lobby(self):
         # Display the lobby UI and update selected characters
+        print("Start of lobby function")
         running = True
         while running:
+            print("Start of While loop inside lobby function")  # Debug print
             self.screen.fill((0,0,0))
             try:
+                print("Trying to receive data from server")  # Debug print
                 data = self.s.recv(1024).decode("utf-8")
+                print(f"Received data: {data}")  # Debug print
                 if data.startswith("lobby_update:"):
                     selected_characters = data.split(":")[1].split(",")
+                    print(f"Selected characters: {selected_characters}")  # Debug print
                     y_pos = 100
                     for character in selected_characters:
                         text = pygame.font.Font('freesansbold.ttf', 20).render(character, True, (255,255,255), (0,0,0))
@@ -82,11 +90,13 @@ class Client:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    print("Quit event detected")  # Debug print
                     running = False
                     pygame.quit()
                     sys.exit()
 
             pygame.display.update()
+            print("Updated display - End of Lobby Function")  # Debug print
 
 if __name__ == "__main__":
     client = Client()
