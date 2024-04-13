@@ -14,7 +14,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     s.bind((server, port))
 except socket.error as e:
-    str(e)
+    print(str(e))
 
 # Listen for incoming connections
 s.listen(2)
@@ -66,6 +66,8 @@ def threaded_client(conn):
                         for client in connections:
                             client.send(str.encode(lobby_update))
                             print("Lobby update sent to clients")  # Debug print
+                elif reply.startswith("start_game"):
+                    print("Game start button pressed")
                 else:
                     print("Received: ", reply)
             print('REPLY: ', reply)

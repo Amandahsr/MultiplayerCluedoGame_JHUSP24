@@ -19,14 +19,18 @@ class Client:
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             self.s.connect((self.server, self.port))
+            data = self.s.recv(1024).decode("utf-8")
+            print(data)
         except Exception as e:
             print("Failed to connect to server:", e)
+            pygame.quit()
             sys.exit()
-
+        # Start the main menu
         self.main_menu()
 
     def main_menu(self):
         print("Start of main_menu function")  # Debug print
+        
         # Display the main menu UI
         font = pygame.font.Font('freesansbold.ttf', 32)
         text = font.render("Welcome! Please select a character:", True, (255,255,255), (0,0,0))
@@ -55,7 +59,7 @@ class Client:
                     running = False
                     pygame.quit()
                     sys.exit()
-                if event.type == pygame.MOUSEBUTTONDOWN:
+                elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     for button in buttons:
                         if button.check_button(mouse_x, mouse_y):
@@ -69,10 +73,19 @@ class Client:
     def lobby(self):
         # Display the lobby UI and update selected characters
         print("Start of lobby function")
+        start_button = Button(self.screen, "Start game", 600, 600)
         running = True
         while running:
             print("Start of While loop inside lobby function")  # Debug print
             self.screen.fill((0,0,0))
+            
+            # Add header text
+            header_font = pygame.font.Font('freesansbold.ttf', 40)
+            header_text = header_font.render("Pregame Lobby", True, (255,255,255), (0,0,0))
+            header_text_rect = header_text.get_rect()
+            header_text_rect.center = (self.gameUI.screen_width // 2, 50)
+            self.screen.blit(header_text, header_text_rect)
+            
             try:
                 print("Trying to receive data from server")  # Debug print
                 data = self.s.recv(1024).decode("utf-8")
@@ -85,6 +98,16 @@ class Client:
                         text = pygame.font.Font('freesansbold.ttf', 20).render(character, True, (255,255,255), (0,0,0))
                         self.screen.blit(text, (100, y_pos))
                         y_pos += 30
+                    if len(selected_characters) >= 2:
+                        start_button.draw_button()
+                        for event in pygame.event.get():
+                            if event.type == pygame.MOUSEBUTTONDOWN:
+                                mouse_x, mouse_y = pygame.mouse.get_pos()
+                                if start_button.check_button(mouse_x, mouse_y):
+                                    self.s.send("start_game".encode())
+                                    print("Start game button clicked")  # Debug print
+                                    running = False
+                                    self.main_game()
             except Exception as e:
                 print("Failed to receive data from server:", e)
 
@@ -97,6 +120,11 @@ class Client:
 
             pygame.display.update()
             print("Updated display - End of Lobby Function")  # Debug print
+
+    def main_game(self):
+        # Game logic goes here
+        print("Start of main_game function")
+        pass
 
 if __name__ == "__main__":
     client = Client()
