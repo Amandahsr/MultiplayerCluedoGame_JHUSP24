@@ -14,7 +14,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     s.bind((server, port))
 except socket.error as e:
-    str(e)
+    print(str(e))
 
 # Listen for incoming connections
 s.listen(2)
@@ -28,17 +28,26 @@ selected_characters = []
 connections = []
 
 # Function to handle each client connection
-def threaded_client(conn):
-    global available_characters, selected_characters
+def threaded_client(conn, player_id):
+    global connections
 
+    character_assignments = ["Miss Scarlet", "Colonel Mustard", "Mrs. White", "Mr. Green", "Mrs. Peacock", "Professor Plum"]
+    character_name = character_assignments[player_id]
+    
+    
     # Send a connection message to the client
     conn.send(str.encode("Connected to server"))
 
+    # Send the character name to the client
+    conn.send(str.encode(character_name))
+    
     while True:
         try:
             # Receive data from the client
+            print("Waiting for data from client")  # Debug print
             data = conn.recv(2048)
             reply = data.decode("utf-8")
+            print(f"Received data: {reply}")  # Debug print
 
             if not data:
                 print("Disconnected")
@@ -47,6 +56,7 @@ def threaded_client(conn):
                 if reply.startswith("select_character:"):
                     # Extract the character name from the received message
                     character_name = reply.split(":")[1]
+                    print(f"Character selected: {character_name}")  # Debug print
 
                     # Check if the character is available
                     if character_name in available_characters:
@@ -58,20 +68,31 @@ def threaded_client(conn):
 
                         # Prepare a lobby update message with the selected characters
                         lobby_update = "lobby_update:" + ",".join(selected_characters)
-
+            
                         # Send the lobby update message to all connected clients
                         for client in connections:
                             client.send(str.encode(lobby_update))
+                            print("Lobby update sent to clients")  # Debug print
+                elif reply.startswith("start_game"):
+                    print("Game start button pressed")
+                    for client in connections:
+                        client.send(str.encode("Game has started."))
+                        print("Game start message sent to clients")  # Debug print
                 else:
                     print("Received: ", reply)
             print('REPLY: ', reply)
-        except Exception as e:
+        except KeyError as e:
             print("Error handling data from client:", e)
+            break
+        except ConnectionResetError as e:
+            print("Connection reset by client")
+            conn.close()
             break
 
     print("Lost connection")
-    conn.close()
+    #conn.close()
 
+player_id = 0
 # Main server loop
 while True:
     # Accept a new connection
@@ -82,7 +103,10 @@ while True:
     connections.append(conn)
 
     # Start a new thread to handle the client connection
-    start_new_thread(threaded_client, (conn,))
+    start_new_thread(threaded_client, (conn, player_id))
+    player_id += 1
+
+
 
 
 '''

@@ -55,6 +55,114 @@ class Button:
         if self.rect.collidepoint(x, y):
             return True
 
+class PlayerCard:
+    def __init__(self, gameUI, character_name, cards):
+        self.character_name = str(character_name)  # Convert character_name to a string
+        self.cards = cards
+        self.gameUI = gameUI
+
+    def display(self):
+        print(f"Character: {self.character_name}")
+        print("Cards: " + ", ".join(self.cards))
+
+    def draw(self, surface):
+        # Draw the player card on the surface
+        # This is just a placeholder for now
+        surface.fill((255, 255, 255))  # Fill the surface with white
+
+        # Draw the player card header
+        font = pygame.font.Font('freesansbold.ttf', 32)
+        text_color = (0, 0, 0)  # Set the text color to black
+        text = font.render(str(self.character_name), True, text_color)  # Convert self.character_name to a string
+        text_rect = text.get_rect()
+        text_rect.center = (self.gameUI.screen_width // 2, 50)
+        surface.blit(text, text_rect)
+
+class GameLog:
+    def __init__(self, gameUI):
+        self.actions = []
+        self.gameUI = gameUI
+    def add_entry(self, action):
+        self.actions.append(action)
+        if len(self.actions) > 5:
+            self.actions.pop(0)
+
+    def display(self):
+        print("Game Log:")
+        for action in reversed(self.actions[-5:]):
+            print(action)
+
+    def draw(self, surface):
+        # Draw the game log on the surface
+        # This is just a placeholder for now
+        surface.fill((200, 200, 200))
+
+        # Draw the game log header
+        font = pygame.font.Font('freesansbold.ttf', 32)
+        text_color = (0, 0, 0)  # Set the text color to black
+        text = font.render("Game Log", True, text_color)
+        text_rect = text.get_rect()
+        text_rect.center = (self.gameUI.screen_width // 2, 50)
+        surface.blit(text, text_rect)
+
+class PlayerOptions:
+    def __init__(self, gameUI, options):
+        self.options = options
+        self.gameUI = gameUI
+
+    def display(self):
+        print("Options:")
+        for option in self.options:
+            print(option)
+
+    def draw(self, surface):
+        # Draw the game options on the surface
+        # This is just a placeholder for now
+        surface.fill((100, 100, 100))
+
+        # Display the options as text
+        font = pygame.font.Font('freesansbold.ttf', 32)
+        text_color = (0, 0, 0)  # Set the text color to black
+        text_y = 100  # Starting y-coordinate for the text
+
+        # Draw the header text
+        header_text = font.render("Player Options", True, text_color)
+        header_rect = header_text.get_rect()
+        header_rect.center = (self.gameUI.screen_width // 2, 50)
+        surface.blit(header_text, header_rect)
+
+        for option in self.options:
+            text = font.render(option, True, text_color)
+            text_rect = text.get_rect()
+            text_rect.center = (self.gameUI.screen_width // 2, text_y)
+            surface.blit(text, text_rect)
+            text_y += 50  # Increase y-coordinate for the next option
+
+class GameBoard:
+    def __init__(self, gameUI, positions):
+        self.positions = positions
+        self.gameUI = gameUI
+
+    def update_position(self, character, position):
+        self.positions[character] = position
+
+    def display(self):
+        print("Game Board:")
+        for character, position in self.positions.items():
+            print(f"{character} is at {position}")
+
+    def draw(self, surface):
+        # Draw the game board on the surface
+        # This is just a placeholder for now
+        surface.fill((0, 0, 0))
+
+        # Draw the game board header
+        font = pygame.font.Font('freesansbold.ttf', 32)
+        text_color = (0, 0, 0)  # Set the text color to black
+        text = font.render("Game Board", True, text_color)
+        text_rect = text.get_rect()
+        text_rect.center = (self.gameUI.screen_width // 2, 50)
+        surface.blit(text, text_rect)
 
 class chatDisplay:
     def __init__(self, screen, x, y):
