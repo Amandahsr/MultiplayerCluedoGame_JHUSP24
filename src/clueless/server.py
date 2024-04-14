@@ -77,7 +77,7 @@ def threaded_client(conn, player_id):
                 else:
                     print("Received: ", reply)
             print('REPLY: ', reply)
-        except Exception as e:
+        except KeyError as e:
             print("Error handling data from client:", e)
             break
 

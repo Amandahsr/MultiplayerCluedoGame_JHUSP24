@@ -21,7 +21,7 @@ class Client:
             self.s.connect((self.server, self.port))
             data = self.s.recv(1024).decode("utf-8")
             print(data)
-        except Exception as e:
+        except KeyError as e:
             print("Failed to connect to server:", e)
             pygame.quit()
             sys.exit()
@@ -108,7 +108,7 @@ class Client:
                                     print("Start game button clicked")  # Debug print
                                     running = False
                                     self.main_game()
-            except Exception as e:
+            except KeyError as e:
                 print("Failed to receive data from server:", e)
 
             for event in pygame.event.get():
@@ -131,7 +131,7 @@ class Client:
         textRect = text.get_rect()
         textRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 4)
 
-        character = "Your Character"  # Replace with the assigned character
+        character = self.s.recv(1024).decode("utf-8")  # Receive the assigned character from the server
 
         character_text = font.render(character, True, (255,255,255), (0,0,0))
         characterRect = character_text.get_rect()
