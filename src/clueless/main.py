@@ -1,8 +1,8 @@
 import sys
-from UI import UI
-from UI import Button
+from UI import UI, Button, chatDisplay
 from os import environ
-environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+
+environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
 import socket
 
@@ -23,12 +23,14 @@ class Client:
             print("Failed to connect to server:", e)
             sys.exit()
 
+        # Display chat messages in bottom right
+        self.chat_display = chatDisplay(self.screen, self.gameUI.screen_width - 50, self.gameUI.screen_height - 50)
         self.main_menu()
 
     def main_menu(self):
         # Display the main menu UI
-        font = pygame.font.Font('freesansbold.ttf', 32)
-        text = font.render("Welcome! Please select a character:", True, (255,255,255), (0,0,0))
+        font = pygame.font.Font("freesansbold.ttf", 32)
+        text = font.render("Welcome! Please select a character:", True, (255, 255, 255), (0, 0, 0))
         textRect = text.get_rect()
         textRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 4)
 
@@ -43,10 +45,13 @@ class Client:
 
         running = True
         while running:
-            self.screen.fill((0,0,0))
+            self.screen.fill((0, 0, 0))
             self.screen.blit(text, textRect)
             for button in buttons:
                 button.draw_button()
+
+            # Display chat messages
+            self.chat_display.display_chat_messages()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -67,14 +72,16 @@ class Client:
         # Display the lobby UI and update selected characters
         running = True
         while running:
-            self.screen.fill((0,0,0))
+            self.screen.fill((0, 0, 0))
             try:
                 data = self.s.recv(1024).decode("utf-8")
                 if data.startswith("lobby_update:"):
                     selected_characters = data.split(":")[1].split(",")
                     y_pos = 100
                     for character in selected_characters:
-                        text = pygame.font.Font('freesansbold.ttf', 20).render(character, True, (255,255,255), (0,0,0))
+                        text = pygame.font.Font("freesansbold.ttf", 20).render(
+                            character, True, (255, 255, 255), (0, 0, 0)
+                        )
                         self.screen.blit(text, (100, y_pos))
                         y_pos += 30
             except Exception as e:
@@ -87,6 +94,7 @@ class Client:
                     sys.exit()
 
             pygame.display.update()
+
 
 if __name__ == "__main__":
     client = Client()
