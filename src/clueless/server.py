@@ -34,9 +34,13 @@ def threaded_client(conn, player_id):
     character_assignments = ["Miss Scarlet", "Colonel Mustard", "Mrs. White", "Mr. Green", "Mrs. Peacock", "Professor Plum"]
     character_name = character_assignments[player_id]
     
+    
     # Send a connection message to the client
     conn.send(str.encode("Connected to server"))
 
+    # Send the character name to the client
+    conn.send(str.encode(character_name))
+    
     while True:
         try:
             # Receive data from the client
@@ -80,9 +84,13 @@ def threaded_client(conn, player_id):
         except KeyError as e:
             print("Error handling data from client:", e)
             break
+        except ConnectionResetError as e:
+            print("Connection reset by client")
+            conn.close()
+            break
 
     print("Lost connection")
-    conn.close()
+    #conn.close()
 
 player_id = 0
 # Main server loop
