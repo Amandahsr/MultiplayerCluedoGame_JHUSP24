@@ -2,8 +2,10 @@ import sys
 from UI import UI
 from UI import Button
 from UI import PlayerCard, GameLog, PlayerOptions, GameBoard
+from UI import UI, Button, chatDisplay
 from os import environ
-environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+
+environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
 import socket
 
@@ -26,15 +28,17 @@ class Client:
             print("Failed to connect to server:", e)
             pygame.quit()
             sys.exit()
-        # Start the main menu
+
+        # Display chat messages in bottom right
+        self.chat_display = chatDisplay(self.screen, self.gameUI.screen_width - 50, self.gameUI.screen_height - 50)
         self.main_menu()
 
     def main_menu(self):
         print("Start of main_menu function")  # Debug print
         
         # Display the main menu UI
-        font = pygame.font.Font('freesansbold.ttf', 32)
-        text = font.render("Welcome! Please select a character:", True, (255,255,255), (0,0,0))
+        font = pygame.font.Font("freesansbold.ttf", 32)
+        text = font.render("Welcome! Please select a character:", True, (255, 255, 255), (0, 0, 0))
         textRect = text.get_rect()
         textRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 4)
 
@@ -49,10 +53,13 @@ class Client:
 
         running = True
         while running:
-            self.screen.fill((0,0,0))
+            self.screen.fill((0, 0, 0))
             self.screen.blit(text, textRect)
             for button in buttons:
                 button.draw_button()
+
+            # Display chat messages
+            self.chat_display.display_chat_messages()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -71,56 +78,62 @@ class Client:
 
             pygame.display.update()
             
-    def lobby(self):
-        # Display the lobby UI and update selected characters
-        print("Start of lobby function")
-        start_button = Button(self.screen, "Start game", 600, 600)
-        running = True
-        while running:
-            print("Start of While loop inside lobby function")  # Debug print
-            self.screen.fill((0,0,0))
+#     def lobby(self):
+#         # Display the lobby UI and update selected characters
+#         print("Start of lobby function")
+#         start_button = Button(self.screen, "Start game", 600, 600)
+#         running = True
+#         while running:
+# <<<<<<< client-debug
+#             print("Start of While loop inside lobby function")  # Debug print
+#             self.screen.fill((0,0,0))
             
-            # Add header text
-            header_font = pygame.font.Font('freesansbold.ttf', 40)
-            header_text = header_font.render("Pregame Lobby", True, (255,255,255), (0,0,0))
-            header_text_rect = header_text.get_rect()
-            header_text_rect.center = (self.gameUI.screen_width // 2, 50)
-            self.screen.blit(header_text, header_text_rect)
+#             # Add header text
+#             header_font = pygame.font.Font('freesansbold.ttf', 40)
+#             header_text = header_font.render("Pregame Lobby", True, (255,255,255), (0,0,0))
+#             header_text_rect = header_text.get_rect()
+#             header_text_rect.center = (self.gameUI.screen_width // 2, 50)
+#             self.screen.blit(header_text, header_text_rect)
             
-            try:
-                print("Trying to receive data from server")  # Debug print
-                data = self.s.recv(1024).decode("utf-8")
-                print(f"Received data: {data}")  # Debug print
-                if data.startswith("lobby_update:"):
-                    selected_characters = data.split(":")[1].split(",")
-                    print(f"Selected characters: {selected_characters}")  # Debug print
-                    y_pos = 100
-                    for character in selected_characters:
-                        text = pygame.font.Font('freesansbold.ttf', 20).render(character, True, (255,255,255), (0,0,0))
-                        self.screen.blit(text, (100, y_pos))
-                        y_pos += 30
-                    if len(selected_characters) >= 2:
-                        start_button.draw_button()
-                        for event in pygame.event.get():
-                            if event.type == pygame.MOUSEBUTTONDOWN:
-                                mouse_x, mouse_y = pygame.mouse.get_pos()
-                                if start_button.check_button(mouse_x, mouse_y):
-                                    self.s.send("start_game".encode())
-                                    print("Start game button clicked")  # Debug print
-                                    running = False
-                                    self.main_game()
-            except KeyError as e:
-                print("Failed to receive data from server:", e)
+# =======
+#             self.screen.fill((0, 0, 0))
+# >>>>>>> main
+#             try:
+#                 print("Trying to receive data from server")  # Debug print
+#                 data = self.s.recv(1024).decode("utf-8")
+#                 print(f"Received data: {data}")  # Debug print
+#                 if data.startswith("lobby_update:"):
+#                     selected_characters = data.split(":")[1].split(",")
+#                     print(f"Selected characters: {selected_characters}")  # Debug print
+#                     y_pos = 100
+#                     for character in selected_characters:
+#                         text = pygame.font.Font("freesansbold.ttf", 20).render(
+#                             character, True, (255, 255, 255), (0, 0, 0)
+#                         )
+#                         self.screen.blit(text, (100, y_pos))
+#                         y_pos += 30
+#                     if len(selected_characters) >= 2:
+#                         start_button.draw_button()
+#                         for event in pygame.event.get():
+#                             if event.type == pygame.MOUSEBUTTONDOWN:
+#                                 mouse_x, mouse_y = pygame.mouse.get_pos()
+#                                 if start_button.check_button(mouse_x, mouse_y):
+#                                     self.s.send("start_game".encode())
+#                                     print("Start game button clicked")  # Debug print
+#                                     running = False
+#                                     self.main_game()
+#             except KeyError as e:
+#                 print("Failed to receive data from server:", e)
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    print("Quit event detected")  # Debug print
-                    running = False
-                    pygame.quit()
-                    sys.exit()
+#             for event in pygame.event.get():
+#                 if event.type == pygame.QUIT:
+#                     print("Quit event detected")  # Debug print
+#                     running = False
+#                     pygame.quit()
+#                     sys.exit()
 
-            pygame.display.update()
-            print("Updated display - End of Lobby Function")  # Debug print
+#             pygame.display.update()
+#             print("Updated display - End of Lobby Function")  # Debug print
 
 
     def character_assignment(self, character):
@@ -219,6 +232,7 @@ class Client:
             clock.tick(30)  # Limit to 30 frames per second
 
         pygame.quit()
+
 
 if __name__ == "__main__":
     client = Client()

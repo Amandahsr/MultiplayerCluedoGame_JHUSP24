@@ -1,2 +1,0 @@
-# ChatClass - Hannah Holbert
-
