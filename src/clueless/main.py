@@ -26,7 +26,7 @@ class Client:
             pygame.quit()
             sys.exit()
         # Start the main menu
-        self.main_menu()
+        self.character_assignment()
 
     def main_menu(self):
         print("Start of main_menu function")  # Debug print
@@ -120,6 +120,48 @@ class Client:
 
             pygame.display.update()
             print("Updated display - End of Lobby Function")  # Debug print
+
+    def character_assignment(self):
+        # Assign characters to players
+        print("Start of character_assignment function")
+        
+        # Display the character assignment UI
+        font = pygame.font.Font('freesansbold.ttf', 32)
+        text = font.render("You have been assigned a character:", True, (255,255,255), (0,0,0))
+        textRect = text.get_rect()
+        textRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 4)
+
+        character = "Your Character"  # Replace with the assigned character
+
+        character_text = font.render(character, True, (255,255,255), (0,0,0))
+        characterRect = character_text.get_rect()
+        characterRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 2)
+
+        start_text = font.render("Press enter to start game", True, (255,255,255), (0,0,0))
+        startRect = start_text.get_rect()
+        startRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height * 3 // 4)
+
+        running = True
+        while running:
+            self.screen.fill((0,0,0))
+            self.screen.blit(text, textRect)
+            self.screen.blit(character_text, characterRect)
+            self.screen.blit(start_text, startRect)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    print("Quit event detected")  # Debug print
+                    running = False
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        self.s.send("start_game".encode())
+                        print("Start game message sent to server")  # Debug print
+                        running = False
+                        self.main_game()
+
+            pygame.display.update()
 
     def main_game(self):
         # Game logic goes here

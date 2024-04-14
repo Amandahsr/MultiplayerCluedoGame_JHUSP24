@@ -28,9 +28,12 @@ selected_characters = []
 connections = []
 
 # Function to handle each client connection
-def threaded_client(conn):
-    global available_characters, selected_characters
+def threaded_client(conn, player_id):
+    global connections
 
+    character_assignments = ["Miss Scarlet", "Colonel Mustard", "Mrs. White", "Mr. Green", "Mrs. Peacock", "Professor Plum"]
+    character_name = character_assignments[player_id]
+    
     # Send a connection message to the client
     conn.send(str.encode("Connected to server"))
 
@@ -68,6 +71,9 @@ def threaded_client(conn):
                             print("Lobby update sent to clients")  # Debug print
                 elif reply.startswith("start_game"):
                     print("Game start button pressed")
+                    for client in connections:
+                        client.send(str.encode("Game has started."))
+                        print("Game start message sent to clients")  # Debug print
                 else:
                     print("Received: ", reply)
             print('REPLY: ', reply)
@@ -78,6 +84,7 @@ def threaded_client(conn):
     print("Lost connection")
     conn.close()
 
+player_id = 0
 # Main server loop
 while True:
     # Accept a new connection
@@ -88,7 +95,10 @@ while True:
     connections.append(conn)
 
     # Start a new thread to handle the client connection
-    start_new_thread(threaded_client, (conn,))
+    start_new_thread(threaded_client, (conn, player_id))
+    player_id += 1
+
+
 
 
 '''
