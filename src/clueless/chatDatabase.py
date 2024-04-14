@@ -3,10 +3,10 @@ MongoDB Atlas allows global connectivity, scalability, deployment and management
 Due to these reasons, it will be used for the chat system storage.
 """
 
-from pymongo import MongoClient
+from pymongo import MongoClient, database, collection
 from pytz import timezone
 from datetime import datetime
-from typing import Dict
+from typing import Dict, List
 
 
 class chatDatabase:
@@ -18,101 +18,123 @@ class chatDatabase:
         """
         Properties of database.
         """
-        self.client = []
-        self.database = None
-        self.chatMessages = None
-        self.game_active_status = False
+        self.dbclient: MongoClient = None
+        self.database: database = None
+        self.chatMessages: collection = None
+        self.game_active_status: bool = False
+        self.game_state_categories: List[str] = [
+            "doorway movement",
+            "secret passage movement",
+            "suggestion",
+            "accusation",
+        ]
+        self.msg_filter_flags: List[str] = [
+            "player_Name",
+            "character_Name",
+            "message_ID",
+            "game_state_category",
+        ]
 
-    def connect_chat_database(self, client=None) -> None:
+    def connect_chat_database(self) -> str:
         """
         Connects server to chat database and initializes database properties.
+        Returns status of database connection.
         """
-        if client is None:
-            # Use default mongoDB server
-            server_url = "localhost:27017"
-            self.client.append(MongoClient(server_url))
-        else:
-            # Use user specified server
-            self.client.append(client)
+        try:
+            # Use default mongoDB database uri
+            db_uri = "mongodb://localhost:27017"
 
-        # Switch on game active status
-        self.database = self.client["cluelessChatDatabase"]
-        self.chatMessages = self.database["chatMessages"]
-        self.game_active_status = True
+            # Initialize attributes of new database
+            self.dbclient = MongoClient(db_uri)
+            self.database = self.dbclient["cluelessChatDatabase"]
+            self.chatMessages = self.database["chatMessages"]
+            self.game_active_status = True
 
-    def disconnect_chat_database(self) -> None:
+            return "New chatMessages database initialized."
+
+        except Exception as e:
+            return f"chatMessages database cannot be initialized due to {e}."
+
+    def disconnect_chat_database(self) -> str:
         """
         Disconnects server from chat database.
+        Returns status of database disconnection.
         """
-        # Disconnect clients
-        for client in self.client:
-            client.close()
+        # Disconnect from database client
+        self.dbclient.close()
 
         # Switch off game active status
         self.game_active_status = False
 
-    def get_all_chat_messages(self):
-        """
-        Returns all chat messages stored in the database for a particular game.
-        """
-        # Query the database using game_ID
-        messages = self.chatMessages.find()
+        return "chatMessages database disconnected."
 
-        # Sort messages by earliest time to make messages more readable
-        messages = messages.sort("message_time")
-
-        return messages
-
-    def store_chat_message(self, player_Name: str, character_Name: str, game_state_category: str, message: str) -> None:
+    def store_chat_message(
+        self,
+        player_Name: str,
+        character_Name: str,
+        game_state_category: str,
+        message: str,
+    ) -> str:
         """
         Stores a chat system message in the database.
 
-        Parameters
+        #Parameters
         player_Name: username/display name of player.
         character_Name: name of in-game character selected by player.
-        game_state_category: Game category in which message is classified under. Available categories are "doorway movement", "secret passage movement", "suggestion", "accusation".
+        game_state_category: Game category in which message is classified under. Available categories are listed in self.game_state_categories.
         message: Details of the game state change.
+
+        Returns status of message storage.
         """
-        # Ensures timestamp follows EST
-        msg_timeZone = timezone("US/Eastern")
+        if not game_state_category in self.game_state_categories:
+            return f"Invalid game_state_category, unable to store message in database. Valid game_state_categories are {self.game_state_categories}."
 
-        # Generate message ID for retrieval purposes: message ID is based on the number of messages in database
-        msg_ID = self.chatMessages.count_documents({}) + 1
+        try:
+            # EST timestamp
+            msg_timeZone = timezone("US/Eastern")
 
-        # Message information that will be stored in database
-        # Note that mongoDB will also add a "_id" key generated internally for them to identify uniquely.
-        message_info = {
-            "player_Name": player_Name,
-            "character_Name": character_Name,
-            "message_ID": msg_ID,
-            "message_time": datetime.now(msg_timeZone),
-            "game_state_category": game_state_category,
-            "message": message,
-        }
+            # message ID is based on the number of messages
+            msg_ID = self.chatMessages.count_documents({}) + 1
 
-        # Store message information in database.
-        self.chatMessages.insert_one(message_info)
+            # Message information that will be stored
+            # Note that mongoDB will also add a "_id" key auto generated to identify message uniquely
+            message_info = {
+                "player_Name": player_Name,
+                "character_Name": character_Name,
+                "message_ID": msg_ID,
+                "message_time": datetime.now(msg_timeZone),
+                "game_state_category": game_state_category,
+                "message": message,
+            }
 
-    def get_specific_message(self, filter_flags: Dict):
+            # Store message information
+            self.chatMessages.insert_one(message_info)
+
+            return "Message is stored successfully in chatMessage database."
+
+        except Exception as e:
+            return f"Unable to store message in chatMessage database due to {e}."
+
+    def get_specific_message(self, filter_flags: Dict) -> List[Dict]:
         """
-        Returns a message stored in the database based on message filter flags. 
-        Valid filter flags are "player_Name", "character_Name", "message_ID", "message_time", "game_state_category" and "message".
-        filter_flags parameter should be structured as {filter_flag: filter_flag_pattern_match} e.g. {"player_Name": "Bob"}.
+        Returns a message stored in the database based on message info matches.
+        Valid filter flags are listed in self.msg_filter_flags.
+
+        *filter_flags parameter should be structured as {filter_flag: filter_flag_pattern_match} e.g. {"player_Name": "Bob"}.
+        To return all messages in database, specify filter_flag_pattern_match as {}.
         """
         # Check if filter_flag is valid
-        valid_filter_flags = set(
-            "player_Name", "character_Name", "message_ID", "message_time", "game_state_category", "message"
-        )
         queried_filter_flags = filter_flags.keys()
-        if not set(queried_filter_flags).issubset(valid_filter_flags):
+        if not set(queried_filter_flags).issubset(set(self.msg_filter_flags)):
             return f"There are filter flags in {queried_filter_flags} that are not valid."
 
         # Query database using filter flags match
-        message = self.chatMessages.find(filter_flags)
+        messages = self.chatMessages.find(filter_flags)
+        messages = [msg for msg in messages]
 
-        # If the message was found, return it
-        if message:
-            return message
+        # If messages not empty, return it
+        if messages:
+            return messages
         else:
             # Specify no messages if none found associated to filter flags
             return f"No messages related to {filter_flags} were found."
