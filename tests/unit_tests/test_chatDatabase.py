@@ -1,125 +1,125 @@
-import pytest
 import mongomock
-from pytz import timezone
-from datetime import datetime
-from clueless.chat_system.chatDatabase import chatDatabase
+from clueless.chatDatabase import chatDatabase
+from unittest.mock import patch
 
 
-# Create a mock database for testing
-@pytest.fixture
-def testdb():
-    # Create test database
-    testdb = chatDatabase()
-    testClient = mongomock.MongoClient()
-    testdb.client = testClient
-    testdb.database = testClient["cluelessChatDatabase"]
-    testdb.chatMessages = testdb.database["chatMessages"]
-    testdb.game_active_status = True
+# Create test database
+def test_db():
+    test_db = chatDatabase()
+    test_db.dbclient = mongomock.MongoClient()
+    test_db.database = test_db.dbclient["chatDatabase"]
+    test_db.chatMessages = test_db.database["chatMessages"]
+    test_db.game_active_status = True
 
-    # Populate database with test messages
-    testdb.chatMessages.insert_one(
-        {
-            "player_ID": 1,
-            "player_Name": "Tom",
-            "character_Name": "Scarlett",
-            "message_ID": 1,
-            "message_time": datetime.now(timezone("US/Eastern")),
-            "message": "test message 1",
-        }
-    )
-    testdb.chatMessages.insert_one(
-        {
-            "player_ID": 1,
-            "player_Name": "Tom",
-            "character_Name": "Scarlett",
-            "message_ID": 2,
-            "message_time": datetime.now(timezone("US/Eastern")),
-            "message": "test message 2",
-        }
-    )
-    testdb.chatMessages.insert_one(
-        {
-            "player_ID": 2,
-            "player_Name": "Jack",
-            "character_Name": "Johnson",
-            "message_ID": 3,
-            "message_time": datetime.now(timezone("US/Eastern")),
-            "message": "test message 3",
-        }
-    )
-
-    return testdb
+    return test_db
 
 
 def test_connect_chat_database():
     # Initialize new database for testing
     testdb = chatDatabase()
-    testClient = mongomock.MongoClient()
+    result = testdb.connect_chat_database()
 
-    testdb.connect_chat_database(client=testClient)
+    assert result == "New chatMessages database initialized."
 
-    assert testdb.client is testClient
-    assert testdb.game_active_status is True
+
+def test_connect_chat_database_error():
+    # Mock client to raise exception for testing
+    with patch("clueless.chatDatabase.MongoClient", side_effect=Exception("Failed connection")) as mock_client:
+        # Initialize new database for testing
+        testdb = chatDatabase()
+        client_response = testdb.connect_chat_database()
+
+        # Ensure mocked client gets called
+        mock_client.assert_called_once()
+
+        assert "chatMessages database cannot be initialized" in client_response
 
 
 def test_disconnect_chat_database():
-    # Connect to new database for testing
-    testdb = chatDatabase()
-    testClient = mongomock.MongoClient()
-    testdb.client = testClient
-    testdb.database = testClient["cluelessChatDatabase"]
-    testdb.chatMessages = testdb.database["chatMessages"]
-    testdb.game_active_status = True
+    testdb = test_db()
+    client_response = testdb.disconnect_chat_database()
 
-    testdb.disconnect_chat_database()
-
-    assert testdb.game_active_status is False
+    assert client_response == "chatMessages database disconnected."
 
 
-def test_get_all_chat_messages(testdb):
-    result = list(testdb.get_all_chat_messages())
+def test_store_chat_message():
+    testdb = test_db()
 
-    assert len(result) == 3
+    testMsg = "test message"
+    db_response = testdb.store_chat_message(
+        player_Name="Bob", character_Name="Peach", game_state_category="doorway movement", message=testMsg
+    )
 
-
-def test_store_chat_message(testdb):
-    # Test parameters
-    player_ID = 1
-    player_Name = "Tom"
-    character_Name = "Scarlett"
-    message = "test message"
-
-    testdb.store_chat_message(player_ID=player_ID, player_Name=player_Name, character_Name=character_Name, message=message)
-
-    # Retrieve specific stored message for test check
-    result = testdb.chatMessages.find_one({"message_ID": 4})
-
-    assert list(result.keys()) == [
-        "player_ID",
-        "player_Name",
-        "character_Name",
-        "message_ID",
-        "message_time",
-        "message",
-        "_id",
-    ]
-    assert result["message"] == message
+    assert testdb.chatMessages.count_documents({}) == 1
+    assert "Message is stored successfully" in db_response
 
 
-def test_get_specific_message(testdb):
-    # Test parameters
-    msg_ID = 3
+def test_store_chat_message_storage_error():
+    testdb = test_db()
 
-    result = testdb.get_specific_message(msg_ID=msg_ID)
-    print(result)
+    # Patch function to raise exception for testing
+    with patch("clueless.chatDatabase.timezone", side_effect=Exception("Unable to store message")) as msg_store_mock:
+        testMsg = "test message"
+        db_response = testdb.store_chat_message(
+            player_Name="Bob", character_Name="Peach", game_state_category="doorway movement", message=testMsg
+        )
 
-    assert result["message"] == "test message 3"
+        # Ensure mocked function gets called
+        msg_store_mock.assert_called_once()
+
+    assert "Unable to store message" in db_response
 
 
-def test_get_specific_message_invalid(testdb):
-    # Test parameters
-    msg_ID = 10
+def test_store_chat_message_invalid_game_state_category():
+    testdb = test_db()
+    testMsg = "test message"
+    db_response = testdb.store_chat_message(
+        player_Name="Bob", character_Name="Peach", game_state_category="invalid category", message=testMsg
+    )
 
-    result = testdb.get_specific_message(msg_ID=msg_ID)
+    assert "Invalid game_state_category" in db_response
 
-    assert result == "Message associated with msg ID is not found in database."
+
+def test_get_specific_message():
+    # Add one test message to testdb
+    testdb = test_db()
+    test_message = {
+        "player_Name": "Bob",
+        "character_Name": "Peach",
+        "message_ID": 1,
+        "message_time": "test time",
+        "game_state_category": "accusation",
+        "message": "test message",
+    }
+    testdb.chatMessages.insert_one(test_message)
+
+    result = testdb.get_specific_message({"game_state_category": "accusation"})
+
+    assert len(result) == 1
+
+
+def test_get_specific_message_filter_flag_invalid():
+    # Add one test message to testdb
+    testdb = test_db()
+    test_message = {
+        "player_Name": "Bob",
+        "character_Name": "Peach",
+        "message_ID": 1,
+        "message_time": "test time",
+        "game_state_category": "accusation",
+        "message": "test message",
+    }
+    testdb.chatMessages.insert_one(test_message)
+
+    result = testdb.get_specific_message({"game_ID": 62572})
+
+    assert "not valid" in result
+
+
+def test_get_specific_message_no_matches():
+    # Add one test message to testdb
+    testdb = test_db()
+
+    result = testdb.get_specific_message({"game_state_category": "accusation"})
+
+    assert "No messages related" in result
