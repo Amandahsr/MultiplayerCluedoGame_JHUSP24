@@ -27,7 +27,7 @@ class Client:
             pygame.quit()
             sys.exit()
         # Start the main menu
-        self.character_assignment()
+        self.main_menu()
 
     def main_menu(self):
         print("Start of main_menu function")  # Debug print
@@ -67,7 +67,7 @@ class Client:
                             self.s.send(f"select_character:{button.msg}".encode())
                             print("Character selection sent to server")  # Debug print
                             running = False
-                            self.lobby()
+                            self.character_assignment(button.msg)
 
             pygame.display.update()
             
@@ -123,13 +123,13 @@ class Client:
             print("Updated display - End of Lobby Function")  # Debug print
 
 
-    def character_assignment(self):
+    def character_assignment(self, character):
         # Assign characters to players
         print("Start of character_assignment function")
         
         # Display the character assignment UI
         font = pygame.font.Font('freesansbold.ttf', 32)
-        text = font.render("You have been assigned a character:", True, (255,255,255), (0,0,0))
+        text = font.render("Character Selection:", True, (255,255,255), (0,0,0))
         textRect = text.get_rect()
         textRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 4)
 
