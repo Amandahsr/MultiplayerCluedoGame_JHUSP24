@@ -51,6 +51,8 @@ def threaded_client(conn, player_id):
 
             if not data:
                 print("Disconnected")
+                connections.remove(conn)
+                conn.close()
                 break
             else:
                 if reply.startswith("select_character:"):
@@ -86,6 +88,7 @@ def threaded_client(conn, player_id):
             break
         except ConnectionResetError as e:
             print("Connection reset by client")
+            connections.remove(conn)
             conn.close()
             break
 
