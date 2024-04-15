@@ -1,8 +1,5 @@
 import sys
-from UI import UI
-from UI import Button
-from UI import PlayerCard, GameLog, PlayerOptions, GameBoard
-from UI import UI, Button, chatDisplay
+from UI import UI, Button, PlayerCard, PlayerOptions, GameBoard, chatDisplay
 from os import environ
 from GameController import *
 
@@ -24,17 +21,17 @@ class Client:
         self.server = "localhost"
         self.port = 5555
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
         try:
             self.s.connect((self.server, self.port))
             data = self.s.recv(1024).decode("utf-8")
             print(data)
+
         except KeyError as e:
             print("Failed to connect to server:", e)
             pygame.quit()
             sys.exit()
 
-        # Display chat messages in bottom right
-        self.chat_display = chatDisplay(self.screen, self.gameUI.screen_width - 50, self.gameUI.screen_height - 50)
         self.main_menu()
 
     def main_menu(self):
@@ -61,9 +58,6 @@ class Client:
             self.screen.blit(text, textRect)
             for button in buttons:
                 button.draw_button()
-
-            # Display chat messages
-            self.chat_display.display_chat_messages()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -152,11 +146,24 @@ class Client:
         player_options = PlayerOptions(self.gameUI, options)
         player_card = PlayerCard(self.gameUI, self.character, ['Card 1', 'Card 2', 'Card 3'])
 
+        # Subsection screen into 4 parts
+        half_width = self.gameUI.screen_width // 2
+        half_height = self.gameUI.screen_height // 2
+        game_board_rect = pygame.Rect(0, 0, half_width, half_height)
+        chat_display_rect = pygame.Rect(0, half_height, half_width, half_height)
+        player_card_rect = pygame.Rect(half_width, 0, half_width, half_height)
+        player_options_rect = pygame.Rect(half_width, half_height, half_width, half_height)
+
+        # Initialize chat log display
+        chat_display = chatDisplay(self.screen, chat_display_rect.x + chat_display_rect.width // 2,
+                                    chat_display_rect.y + chat_display_rect.height // 2)
+        chat_display.rect = chat_display_rect     
+
         # Define the rectangles for each section
-        game_board_rect = pygame.Rect(0, 0, self.gameUI.screen_width // 2, self.gameUI.screen_height // 2)
-        game_log_rect = pygame.Rect(0, self.gameUI.screen_height // 2, self.gameUI.screen_width // 2, self.gameUI.screen_height // 2)
-        player_card_rect = pygame.Rect(self.gameUI.screen_width // 2, 0, self.gameUI.screen_width // 2, self.gameUI.screen_height // 2)
-        player_options_rect = pygame.Rect(self.gameUI.screen_width // 2, self.gameUI.screen_height // 2, self.gameUI.screen_width // 2, self.gameUI.screen_height // 2)
+        #game_board_rect = pygame.Rect(0, 0, self.gameUI.screen_width // 2, self.gameUI.screen_height // 2)
+        #game_log_rect = pygame.Rect(0, self.gameUI.screen_height // 2, self.gameUI.screen_width // 2, self.gameUI.screen_height // 2)
+        #player_card_rect = pygame.Rect(self.gameUI.screen_width // 2, 0, self.gameUI.screen_width // 2, self.gameUI.screen_height // 2)
+        #player_options_rect = pygame.Rect(self.gameUI.screen_width // 2, self.gameUI.screen_height // 2, self.gameUI.screen_width // 2, self.gameUI.screen_height // 2)
 
         # Game loop
         running = True
@@ -176,9 +183,10 @@ class Client:
             pygame.draw.rect(self.screen, BLACK, player_card_rect)
             pygame.draw.rect(self.screen, BLACK, player_options_rect)
 
-            # Drawing the UI components onto their respective sections
+            # Redraw UI components onto their respective sections
+            self.screen.fill(BLACK)
             game_board.draw(self.screen.subsurface(game_board_rect))
-            game_log.draw(self.screen.subsurface(game_log_rect))
+            chat_display.display_chat_messages()
             player_options.draw(self.screen.subsurface(player_options_rect))
             player_card.draw(self.screen.subsurface(player_card_rect))
 
@@ -188,10 +196,8 @@ class Client:
 
         pygame.quit()
 
-
 if __name__ == "__main__":
     client = Client()
-
 
 
 #     def lobby(self):
