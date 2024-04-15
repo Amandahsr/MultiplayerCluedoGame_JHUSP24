@@ -2,6 +2,8 @@ from os import environ
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 #import pygame
 from player import Player
+from UI import chatDisplay
+from chatDatabase import chatDatabase
 #import server
 import random
 
@@ -197,6 +199,7 @@ class GameController:
             num += 1  
         print(next.character)
         print(disapproval)
+
         return next, disapproval #returns player who disapproved and cards to disapprove, needs to go to another class
             
     #handles the suggestion logic after a player selected their move, called during execute_move
@@ -219,12 +222,21 @@ class GameController:
     #"Take Secret Passageway and Suggest", "Move To Room and Suggest", "Move To Hallway", "Suggest", "Accuse", "Pass"
     #option is whatever the player also selected, for example if move room was selected, the option is the room they selected, use the naming convention in self.rooms
     #suggestion is also needed by the suggest() function
-    def execute_move(self, move, option, suggestion=None):
+    def execute_move(self, move, option, chat_display: chatDisplay, suggestion=None):
         if move == "Take Secret Passageway and Suggest": #game state updated
             self.current_player.set_location(option)
             self.current_player.set_in_room(True)
             self.current_player.set_in_corner_room(True)
             self.suggest(suggestion)
+
+            # Store and display msg
+            passageway_dest = option
+            characterName = self.current_player.character
+            weapon = suggestion["weapon"]
+            suspect = suggestion["suspect"]
+            room = suggestion["room"]
+            chat_display.add_chat_message(f"{characterName} takes secret passageway into {passageway_dest} and suggested [{weapon}, {suspect}, {room}].")
+
         if move == "Move To Room and Suggest":
             self.current_player.set_location(option)
             self.current_player.set_in_room(True)
@@ -233,10 +245,25 @@ class GameController:
             else:
                 self.current_player.set_in_corner_room(False)   
             self.suggest(suggestion)
+
+            # Store and display msg
+            passageway_dest = option
+            characterName = self.current_player.character
+            weapon = suggestion["weapon"]
+            suspect = suggestion["suspect"]
+            room = suggestion["room"]
+            chat_display.add_chat_message(f"{characterName} moves into {passageway_dest} and suggested [{weapon}, {suspect}, {room}].")
+
         if move == "Move To Hallway":
             self.current_player.set_location(option)
             self.current_player.set_in_room(False)
-            self.current_player.set_in_corner_room(False)   
+            self.current_player.set_in_corner_room(False)  
+
+            # Store and display msg
+            characterName = self.current_player.character
+            hallway = option
+            chat_display.add_chat_message(f"{characterName} moves into hallway {hallway}.")
+
         if move == "Suggest":
             self.current_player.set_moved(False)
             self.current_player.set_in_room(True)
@@ -245,8 +272,21 @@ class GameController:
             else:
                 self.current_player.set_in_corner_room(False)
             self.suggest(suggestion)
+
+            # Store and display msg
+            characterName = self.current_player.character
+            weapon = suggestion["weapon"]
+            suspect = suggestion["suspect"]
+            room = suggestion["room"]
+            chat_display.add_chat_message(f"{characterName} suggests [{weapon}, {suspect}, {room}].")
+
         if move == "Accuse":
             self.accuse()
+
+            # Store and display msg
+            characterName = self.current_player.character
+            chat_display.add_chat_message(f"{characterName} accuses.")
+
         #set next current player as the turn is complete, if "Pass" is chosen, current_player is reset as well
         self.current_player = self.next_player(self.current_player)
 
