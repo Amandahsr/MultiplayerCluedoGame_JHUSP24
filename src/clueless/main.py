@@ -1,5 +1,5 @@
 import sys
-from UI import UI, Button, PlayerCard, PlayerOptions, GameBoard, chatDisplay
+from UI import UI, Button, PlayerCard, PlayerOptions, GameBoard, chatDisplay, CharacterIcon
 from os import environ
 from GameController import *
 
@@ -142,7 +142,6 @@ class Client:
         options = ['Move', 'Suggest', 'Accuse']
 
         game_board = GameBoard(self.gameUI, current_locations)
-        game_log = GameLog(self.gameUI)
         player_options = PlayerOptions(self.gameUI, options)
         player_card = PlayerCard(self.gameUI, self.character, ['Card 1', 'Card 2', 'Card 3'])
 
@@ -159,12 +158,6 @@ class Client:
                                     chat_display_rect.y + chat_display_rect.height // 2)
         chat_display.rect = chat_display_rect     
 
-        # Define the rectangles for each section
-        #game_board_rect = pygame.Rect(0, 0, self.gameUI.screen_width // 2, self.gameUI.screen_height // 2)
-        #game_log_rect = pygame.Rect(0, self.gameUI.screen_height // 2, self.gameUI.screen_width // 2, self.gameUI.screen_height // 2)
-        #player_card_rect = pygame.Rect(self.gameUI.screen_width // 2, 0, self.gameUI.screen_width // 2, self.gameUI.screen_height // 2)
-        #player_options_rect = pygame.Rect(self.gameUI.screen_width // 2, self.gameUI.screen_height // 2, self.gameUI.screen_width // 2, self.gameUI.screen_height // 2)
-
         # Game loop
         running = True
         while running:
@@ -179,7 +172,7 @@ class Client:
 
             # Drawing the different sections
             pygame.draw.rect(self.screen, BLACK, game_board_rect)
-            pygame.draw.rect(self.screen, BLACK, game_log_rect)
+            pygame.draw.rect(self.screen, BLACK, chat_display_rect)
             pygame.draw.rect(self.screen, BLACK, player_card_rect)
             pygame.draw.rect(self.screen, BLACK, player_options_rect)
 

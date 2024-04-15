@@ -215,7 +215,7 @@ class CharacterIcon:
 
         # Render the initials
         text = font.render(initials, True, (0, 0, 0))  # Black text
-
+ 
         # Get the width and height of the text
         text_width, text_height = text.get_size()
 
@@ -226,24 +226,9 @@ class CharacterIcon:
         # Draw the text on the surface
         self.surface.blit(text, (text_x, text_y))
 
-    def draw(self, screen, position):
+    def draw(self, surface, position):
         # Draw the icon on the screen at the given position
-        screen.blit(self.surface, position)
-        # Draw the game board on the surface
-        surface.fill((255, 255, 255))
-
-        # Render header
-        header_text = self.header_font.render("-- GAMEBOARD --", True, (0, 0, 0))
-        header_rect = header_text.get_rect()
-        header_rect.center = (surface.get_width() // 2, 15)
-        surface.blit(header_text, header_rect)
-
-        # Resize game board image using remaining rect height space
-        gameboard_height = surface.get_height() - (header_rect.bottom + 5)
-        scaled_image = pygame.transform.scale(self.original_image, (self.img_width, gameboard_height))
-
-        # Draw the game board image
-        surface.blit(scaled_image, (0, header_rect.bottom + 5))
+        surface.blit(self.surface, position)
 
 class chatDisplay:
     def __init__(self, screen, x, y):
