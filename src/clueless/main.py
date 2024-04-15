@@ -4,6 +4,7 @@ from UI import Button
 from UI import PlayerCard, GameLog, PlayerOptions, GameBoard
 from UI import UI, Button, chatDisplay
 from os import environ
+from GameController import *
 
 environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
@@ -13,9 +14,12 @@ import socket
 class Client:
     def __init__(self):
         pygame.init()
+        self.gameController = GameController()
         self.gameUI = UI()
+        self.character = None
         self.screen = pygame.display.set_mode((self.gameUI.screen_width, self.gameUI.screen_height), pygame.RESIZABLE)
         pygame.display.set_caption("Clue-Less")
+
 
         self.server = "localhost"
         self.port = 5555
@@ -31,7 +35,7 @@ class Client:
 
         # Display chat messages in bottom right
         self.chat_display = chatDisplay(self.screen, self.gameUI.screen_width - 50, self.gameUI.screen_height - 50)
-        self.main_game()
+        self.main_menu()
 
     def main_menu(self):
         print("Start of main_menu function")  # Debug print
@@ -128,18 +132,18 @@ class Client:
 
         clock = pygame.time.Clock()
         
-        # Hard coded  for testing purposes
-        self.character = "Miss Scarlet"
+        # Initialize the players
+        self.gameController.initialize_player("Miss Scarlet")
+        self.gameController.initialize_player("Col. Mustard")
+        self.gameController.initialize_player("Mrs. White")
+        self.gameController.initialize_player("Mr. Green")
+        self.gameController.initialize_player("Mrs. Peacock")
+        self.gameController.initialize_player("Professor Plum")
 
-        # Will need to be updated to reflect the actual game state
-        current_locations = {
-            "Miss Scarlet": "HL_Hall",
-            "Col. Mustard": "LD_Hall",
-            "Mrs. White": "BK_Hall",
-            "Mr. Green": "CB_Hall",
-            "Mrs. Peacock": "LC_Hall",
-            "Professor Plum": "SL_Hall"
-        }
+        # Create a dictionary to hold the current locations of each character
+        current_locations = {}
+        for player in self.gameController.players:
+            current_locations[player.character] = player.location
 
         options = ['Move', 'Suggest', 'Accuse']
 
@@ -160,6 +164,11 @@ class Client:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+
+            # Update the current_locations dictionary
+            current_locations = {}
+            for player in self.gameController.players:
+                current_locations[player.character] = player.location
 
             # Drawing the different sections
             pygame.draw.rect(self.screen, BLACK, game_board_rect)
