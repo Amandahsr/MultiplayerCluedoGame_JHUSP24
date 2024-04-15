@@ -14,16 +14,6 @@ class UI:
         self.bg_color = (230, 230, 230)
 
 
-# class Text():
-#     def __init__(self, screen, msg, x, y):
-
-#             font = pygame.font.Font('freesansbold.ttf', 32)
-#             text = font.render("Welcome! Please select a character:", True, (255,255,255), (0,0,0))
-#             textRect = text.get_rect()
-#             textRect.center = (gameUI.screen_width // 2, gameUI.screen_height // 2)
-#             screen.blit(text, textRect)
-
-
 class Button:
     msg = ""
 
@@ -60,6 +50,9 @@ class PlayerCard:
         self.character_name = str(character_name)  # Convert character_name to a string
         self.cards = cards
         self.gameUI = gameUI
+        self.header_font = pygame.font.Font('freesansbold.ttf', 28)
+        self.card_font = pygame.font.Font('freesansbold.ttf', 25)
+        self.text_color = (0, 0, 0)
 
     def display(self):
         print(f"Character: {self.character_name}")
@@ -70,45 +63,30 @@ class PlayerCard:
         # This is just a placeholder for now
         surface.fill((255, 255, 255))  # Fill the surface with white
 
-        # Draw the player card header
-        font = pygame.font.Font('freesansbold.ttf', 32)
-        text_color = (0, 0, 0)  # Set the text color to black
-        text = font.render(str(self.character_name), True, text_color)  # Convert self.character_name to a string
-        text_rect = text.get_rect()
-        text_rect.center = (self.gameUI.screen_width // 2, 50)
-        surface.blit(text, text_rect)
+        # Render header
+        header_text = self.header_font.render(f"-- {self.character_name} CARDS --", True, self.text_color)
+        header_rect = header_text.get_rect()
+        header_rect.center = (surface.get_width() // 2, 15)
+        surface.blit(header_text, header_rect)
 
-class GameLog:
-    def __init__(self, gameUI):
-        self.actions = []
-        self.gameUI = gameUI
-    def add_entry(self, action):
-        self.actions.append(action)
-        if len(self.actions) > 5:
-            self.actions.pop(0)
+        # Starting text location
+        text_y = header_rect.bottom + 100
 
-    def display(self):
-        print("Game Log:")
-        for action in reversed(self.actions[-5:]):
-            print(action)
+        # Render player cards
+        for card in self.cards:
+            text = self.card_font.render(card, True, self.text_color)
+            text_rect = text.get_rect()
+            text_rect.center = (surface.get_width() // 2, text_y)
+            surface.blit(text, text_rect)
+            text_y += 50
 
-    def draw(self, surface):
-        # Draw the game log on the surface
-        # This is just a placeholder for now
-        surface.fill((200, 200, 200))
-
-        # Draw the game log header
-        font = pygame.font.Font('freesansbold.ttf', 32)
-        text_color = (0, 0, 0)  # Set the text color to black
-        text = font.render("Game Log", True, text_color)
-        text_rect = text.get_rect()
-        text_rect.center = (self.gameUI.screen_width // 2, 50)
-        surface.blit(text, text_rect)
 
 class PlayerOptions:
     def __init__(self, gameUI, options):
         self.options = options
         self.gameUI = gameUI
+        self.header_font = pygame.font.Font('freesansbold.ttf', 28)
+        self.option_font = pygame.font.Font('freesansbold.ttf', 25)
 
     def display(self):
         print("Options:")
@@ -116,25 +94,25 @@ class PlayerOptions:
             print(option)
 
     def draw(self, surface):
-        # Draw the game options on the surface
-        # This is just a placeholder for now
+        # Fill area for visibility
         surface.fill((100, 100, 100))
 
         # Display the options as text
-        font = pygame.font.Font('freesansbold.ttf', 32)
         text_color = (0, 0, 0)  # Set the text color to black
-        text_y = 100  # Starting y-coordinate for the text
+        text_y = 15  # Starting y-coordinate for text
 
-        # Draw the header text
-        header_text = font.render("Player Options", True, text_color)
+        # Draw header text adjusted to subsurface
+        header_text = self.header_font.render("-- PLAYER OPTIONS --", True, text_color)
         header_rect = header_text.get_rect()
-        header_rect.center = (self.gameUI.screen_width // 2, 50)
+        header_rect.center = (surface.get_width() // 2, text_y)
         surface.blit(header_text, header_rect)
+        text_y += 100  # Increase y-coordinate to draw options text
 
+        # Draw player options adjusted to subsurface
         for option in self.options:
-            text = font.render(option, True, text_color)
+            text = self.option_font.render(option, True, text_color)
             text_rect = text.get_rect()
-            text_rect.center = (self.gameUI.screen_width // 2, text_y)
+            text_rect.center = (surface.get_width() // 2, text_y)
             surface.blit(text, text_rect)
             text_y += 50  # Increase y-coordinate for the next option
 
@@ -142,12 +120,11 @@ class GameBoard:
     def __init__(self, gameUI):
         #self.positions = positions
         self.gameUI = gameUI
-        # Load the game board image
-        original_image = pygame.image.load("Gameboard.png")
-        
-        img_width = self.gameUI.screen_width // 2
-        img_height = self.gameUI.screen_height // 2
-        self.image = pygame.transform.scale(original_image, (img_width, img_height))
+        self.header_font = pygame.font.Font('freesansbold.ttf', 28)
+
+        # Image attributes
+        self.original_image = pygame.image.load("Gameboard.png")
+        self.img_width = self.gameUI.screen_width // 2
 
     def update_position(self, character, position):
         self.positions[character] = position
@@ -159,20 +136,30 @@ class GameBoard:
 
     def draw(self, surface):
         # Draw the game board on the surface
-        surface.fill((0, 0, 0))
+        surface.fill((255, 255, 255))
+
+        # Render header
+        header_text = self.header_font.render("-- GAMEBOARD --", True, (0, 0, 0))
+        header_rect = header_text.get_rect()
+        header_rect.center = (surface.get_width() // 2, 15)
+        surface.blit(header_text, header_rect)
+
+        # Resize game board image using remaining rect height space
+        gameboard_height = surface.get_height() - (header_rect.bottom + 5)
+        scaled_image = pygame.transform.scale(self.original_image, (self.img_width, gameboard_height))
 
         # Draw the game board image
-        # Adjust (0, 0) to modify image position
-        surface.blit(self.image, (0, 0))  
+        surface.blit(scaled_image, (0, header_rect.bottom + 5))
 
 class chatDisplay:
     def __init__(self, screen, x, y):
         self.screen = screen
         self.screen_rect = screen.get_rect()
         self.width, self.height = 250, 100
-        self.chat_color = (255, 255, 255)
+        self.chat_color = (255, 255, 245)
         self.text_color = (0, 0, 0)
-        self.font = pygame.font.SysFont(None, 20)
+        self.header_font = pygame.font.Font('freesansbold.ttf', 28)
+        self.log_font = pygame.font.Font('freesansbold.ttf', 15)
         self.rect = pygame.Rect(0, 0, self.width, self.height)
         self.rect.center = (x, y)
 
@@ -196,11 +183,30 @@ class chatDisplay:
         # Draw chat display on screen
         pygame.draw.rect(self.screen, self.chat_color, self.rect)
 
-        # Show log messages in chat display
-        for index, msg in enumerate(self.messages):
-            chat_surface = self.font.render(msg, True, self.text_color)
+        # Render the header
+        header_text = self.header_font.render("-- CHAT LOG --", True, self.text_color)
+        header_rect = header_text.get_rect()
+        header_rect.center = (self.rect.x + self.rect.width // 2, self.rect.y + 15)
+        self.screen.blit(header_text, header_rect)
 
-            # Calculate text coordinates in chat display
+        # Starting text location
+        text_y = header_rect.bottom + 20
+
+        # Render log messages
+        for index, msg in enumerate(self.messages):
+            chat_surface = self.log_font.render(msg, True, self.text_color)
+
+            # Calculate text coordinates
             text_x = self.rect.x + 10
-            text_y = self.rect.y + 10 + (index * 30)
             self.screen.blit(chat_surface, (text_x, text_y))
+            text_y += chat_surface.get_height() + 10 + (index * 30)
+
+
+# class Text():
+#     def __init__(self, screen, msg, x, y):
+
+#             font = pygame.font.Font('freesansbold.ttf', 32)
+#             text = font.render("Welcome! Please select a character:", True, (255,255,255), (0,0,0))
+#             textRect = text.get_rect()
+#             textRect.center = (gameUI.screen_width // 2, gameUI.screen_height // 2)
+#             screen.blit(text, textRect)
