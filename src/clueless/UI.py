@@ -139,9 +139,15 @@ class PlayerOptions:
             text_y += 50  # Increase y-coordinate for the next option
 
 class GameBoard:
-    def __init__(self, gameUI, positions):
-        self.positions = positions
+    def __init__(self, gameUI):
+        #self.positions = positions
         self.gameUI = gameUI
+        # Load the game board image
+        original_image = pygame.image.load("Gameboard.png")
+        
+        img_width = self.gameUI.screen_width // 2
+        img_height = self.gameUI.screen_height // 2
+        self.image = pygame.transform.scale(original_image, (img_width, img_height))
 
     def update_position(self, character, position):
         self.positions[character] = position
@@ -153,16 +159,11 @@ class GameBoard:
 
     def draw(self, surface):
         # Draw the game board on the surface
-        # This is just a placeholder for now
         surface.fill((0, 0, 0))
 
-        # Draw the game board header
-        font = pygame.font.Font('freesansbold.ttf', 32)
-        text_color = (0, 0, 0)  # Set the text color to black
-        text = font.render("Game Board", True, text_color)
-        text_rect = text.get_rect()
-        text_rect.center = (self.gameUI.screen_width // 2, 50)
-        surface.blit(text, text_rect)
+        # Draw the game board image
+        # Adjust (0, 0) to modify image position
+        surface.blit(self.image, (0, 0))  
 
 class chatDisplay:
     def __init__(self, screen, x, y):

@@ -77,7 +77,7 @@ class Client:
                             self.character_assignment(button.msg)
 
             pygame.display.update()
-            
+        
 #     def lobby(self):
 #         # Display the lobby UI and update selected characters
 #         print("Start of lobby function")
@@ -134,7 +134,6 @@ class Client:
 
 #             pygame.display.update()
 #             print("Updated display - End of Lobby Function")  # Debug print
-
 
     def character_assignment(self, character):
         # Assign characters to players
@@ -197,7 +196,7 @@ class Client:
 
         options = ['Move', 'Suggest', 'Accuse']
 
-        game_board = GameBoard(self.gameUI, positions)
+        game_board = GameBoard(self.gameUI)
         game_log = GameLog(self.gameUI)
         player_options = PlayerOptions(self.gameUI, options)
         player_card = PlayerCard(self.gameUI, self.character, ['Card 1', 'Card 2', 'Card 3'])
