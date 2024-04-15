@@ -3,7 +3,6 @@ environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 #import pygame
 from player import Player
 from UI import chatDisplay
-from chatDatabase import chatDatabase
 #import server
 import random
 
