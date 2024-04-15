@@ -27,7 +27,7 @@ class Client:
         except KeyError as e:
             print("Failed to connect to server:", e)
             pygame.quit()
-            sys.exit()
+            sys.exit(0)
 
         self.main_menu()
 
@@ -61,7 +61,7 @@ class Client:
                     print("Quit event detected")  # Debug print
                     running = False
                     pygame.quit()
-                    sys.exit()
+                    sys.exit(0)
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     for button in buttons:
@@ -72,7 +72,8 @@ class Client:
                             running = False
                             self.character_assignment(character)
 
-            pygame.display.update()
+            if (running):
+                pygame.display.update()
         
 
     def character_assignment(self, character):
@@ -105,7 +106,7 @@ class Client:
                     print("Quit event detected")  # Debug print
                     running = False
                     pygame.quit()
-                    sys.exit()
+                    sys.exit(0)
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     if start_button.check_button(mouse_x, mouse_y):
@@ -114,7 +115,8 @@ class Client:
                         running = False
                         self.main_game()
 
-            pygame.display.update()
+            if (running):
+                pygame.display.update()
     
     def main_game(self):
         print("Start of main_game function")
