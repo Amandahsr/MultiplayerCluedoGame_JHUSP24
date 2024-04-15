@@ -73,8 +73,9 @@ class Client:
                         if button.check_button(mouse_x, mouse_y):
                             self.s.send(f"select_character:{button.msg}".encode())
                             print("Character selection sent to server")  # Debug print
+                            character = button.msg
                             running = False
-                            self.character_assignment(button.msg)
+                            self.character_assignment(character)
 
             pygame.display.update()
         
@@ -145,7 +146,6 @@ class Client:
         textRect = text.get_rect()
         textRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 4)
 
-        character = self.s.recv(1024).decode("utf-8")  # Receive the assigned character from the server
         self.character = character
 
         character_text = font.render(character, True, (255,255,255), (0,0,0))
