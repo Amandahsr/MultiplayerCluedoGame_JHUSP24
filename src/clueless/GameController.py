@@ -5,6 +5,17 @@ from player import Player
 #import server
 import random
 
+
+'''call order: 
+create a GameController object 
+create_answer(), 
+initialize_player(character), to be called after each player is added to the game
+initialize_cards(), to be called after every player has joined
+initialize_turns(), to be called after every player has joined
+valid_moves(), to be called after the game has "started" and is used the calculate the valid moves for the current player's turn
+execute_move(move, option, suggestion), to be called after player input is given. updates the game state based on player's choice. Additionally,
+    it moves to the next player's turn after complete and calls valid_moves() to start the cycle again'''
+
 class GameController:
 
     def __init__(self, players = []):
@@ -29,6 +40,7 @@ class GameController:
     def set_available_cards(self, x):
         self.available_cards = x
     
+    #called before initialize players, creates the correct answer
     def create_answer(self): #must be called before initialize_players
         suspect = random.choice(self.cards.get('suspect'))
         room = random.choice(self.cards.get('room'))
@@ -39,6 +51,7 @@ class GameController:
         self.available_cards.remove(weapon)
         return answer
 
+    #need input for user interface, should be run every time a player joins
     def initialize_player(self, character): #need character from Server i think, order of players joining as well
         if character == 'Professor Plum':
             p = Player('Professor Plum', 'SL_Hall', True, 1)
@@ -55,6 +68,7 @@ class GameController:
         self.players.append(p) #adds players to game state
         return p
     
+    #should be run after every player joins
     def initialize_turns(self): #initializing the turn order
         for i in self.players:
             self.turn_order.append(i.id)
@@ -63,7 +77,8 @@ class GameController:
             if i.id == self.turn_order[0]:
                 self.current_player = i
 
-    def initialize_cards(self): #to be executed when all players have joined
+    #to be executed when all players have joined
+    def initialize_cards(self):
         for i in self.players: #cards chosen randomly for each player
             cards = []
             for j in range(18//len(self.players)): #18 is the number of total available cards
@@ -76,6 +91,7 @@ class GameController:
                 new_card = random.choice(self.available_cards)
                 self.players[i].get_cards().append(new_card)
 
+    #to be run at the start of a player's turn
     def valid_moves(self): #moves goes to player or client to display
         moves = [] #initializing the valid moves
         options = {"Hallways": None, "Rooms": None, "Rooms_Passageway": None} #initializes the options a player can move to
@@ -122,14 +138,15 @@ class GameController:
         if self.current_player.in_room == True:
             num = 0
             adj_halls = self.board.get(self.current_player.location) #adjacent hallways
+            print(adj_halls)
             max = len(adj_halls) #used to compare number of players in the adjacent halls
             for i in self.players: #check to see if hallways from the room are blocked
                 if i.location in adj_halls: #looks up the hallways adjacent to room and checks against other player's locations
                     adj_halls.remove(i.location) #removes hall in player in hall because it is not valid to move to that hall
                     num += 1
-                if num != max: #comparing the number of players in adjacent hallways to the number of adjacent hallways
-                    moves.append("Move To Hallway")
-                    options["Hallways"] = adj_halls
+            if num != max: #comparing the number of players in adjacent hallways to the number of adjacent hallways
+                moves.append("Move To Hallway")
+                options["Hallways"] = adj_halls
             if self.current_player.location in self.corner_rooms:
                 moves.append("Take Secret Passageway and Suggest")
                 if self.current_player.location == "Study":
@@ -158,8 +175,13 @@ class GameController:
                 next_player = i
         return next_player
     
-    def disapprove_suggestion(self, suggestion): #need the suggestion from player selection, suggestion is assumed to be a dict
+
+    #need the suggestion from player selection, suggestion is assumed to be a dict
+    #dict is assumed to be structure like self.cards field {'suspect' : 'Miss Peacock', 'weapon' : candlestick, 'Room' : 'Dining'}
+    #return player who disapproved and options for disapproval, must be displayed
+    def disapprove_suggestion(self, suggestion):
         disapproval = []
+        cur = self.current_player
         next = self.next_player(cur)
         num = 0
         while num < (len(self.players)-1):
@@ -171,35 +193,38 @@ class GameController:
                 disapproval.append(suggestion.get("weapon")) 
             if len(disapproval) != 0: #if player can disapprove suggestion, break loop
                 break
-            next = self.next_player(next)
+            next = self.next_player(next) #moves to the next player
             num += 1  
+        print(next.character)
+        print(disapproval)
         return next, disapproval #returns player who disapproved and cards to disapprove, needs to go to another class
             
-
     #handles the suggestion logic after a player selected their move, called during execute_move
+    #suggestion is assumed to be in a dict specified above
     def suggest(self, suggestion): #need the suggestion from player selection, suggestion is assumed to be a dict
         for i in self.players:
             if i.character == suggestion.get("suspect"):
-                i.set_location(suggestion.get("location"))
+                i.set_location(suggestion.get("room"))
                 i.set_moved(True)
                 break
         self.disapprove_suggestion(suggestion)
-            
-        
-            
 
     #handles the accusation logic after a player selected their move, called during execute_move
     def accuse(self):
         #needs to be implemented
         return None
             
-        #execute move needs the selected move and the option (i.e., which room, hallway, passageway player selected)
-    def execute_move(self, move, option):
+    #execute move needs the selected move and the option (i.e., which room, hallway, passageway player selected)
+    #moves are strings, 6 options shown below:
+    #"Take Secret Passageway and Suggest", "Move To Room and Suggest", "Move To Hallway", "Suggest", "Accuse", "Pass"
+    #option is whatever the player also selected, for example if move room was selected, the option is the room they selected, use the naming convention in self.rooms
+    #suggestion is also needed by the suggest() function
+    def execute_move(self, move, option, suggestion=None):
         if move == "Take Secret Passageway and Suggest": #game state updated
             self.current_player.set_location(option)
             self.current_player.set_in_room(True)
-            self.current_player.in_corner_room(True)
-            self.suggest()
+            self.current_player.set_in_corner_room(True)
+            self.suggest(suggestion)
         if move == "Move To Room and Suggest":
             self.current_player.set_location(option)
             self.current_player.set_in_room(True)
@@ -207,7 +232,7 @@ class GameController:
                 self.current_player.set_in_corner_room(True)   
             else:
                 self.current_player.set_in_corner_room(False)   
-            self.suggest()
+            self.suggest(suggestion)
         if move == "Move To Hallway":
             self.current_player.set_location(option)
             self.current_player.set_in_room(False)
@@ -219,25 +244,34 @@ class GameController:
                 self.current_player.set_in_corner_room(True)   
             else:
                 self.current_player.set_in_corner_room(False)
+            self.suggest(suggestion)
         if move == "Accuse":
             self.accuse()
         #set next current player as the turn is complete, if "Pass" is chosen, current_player is reset as well
         self.current_player = self.next_player(self.current_player)
+
+        #calls valid moves to start next turn
+        self.valid_moves()
             
                     
         
         
-g = GameController()
+'''g = GameController()
 g.initialize_player('Professor Plum')
 g.initialize_player('Mrs. Peacock')
 g.initialize_player('Mr. Green')
-g.initialize_player('Mrs. White')
 g.initialize_player('Col. Mustard')
 g.initialize_player('Miss Scarlet')
 g.create_answer()
 g.initialize_cards()
 g.initialize_turns()
-
-#for i in g.players:
- #   print(i.cards)
-  #  print(i.character)
+#print(g.valid_moves())
+g.current_player.set_location("Study")
+g.current_player.set_in_room(True)
+g.current_player.set_in_corner_room(True)
+g.current_player.start = False
+g.current_player.moved = True
+print(g.valid_moves())
+print(g.current_player.character)
+g.execute_move("Move To Hallway", "SL_Hall")
+print(g.current_player.character)'''

@@ -43,6 +43,3 @@ class Player:
         self.in_room = x
     def set_in_corner_room(self, x):
         self.in_corner_room = x
-
-    #def __str__(self):
-     #   return str(self.name)
