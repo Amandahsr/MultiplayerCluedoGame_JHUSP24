@@ -73,11 +73,12 @@ class Client:
                         if button.check_button(mouse_x, mouse_y):
                             self.s.send(f"select_character:{button.msg}".encode())
                             print("Character selection sent to server")  # Debug print
+                            character = button.msg
                             running = False
-                            self.character_assignment(button.msg)
+                            self.character_assignment(character)
 
             pygame.display.update()
-            
+        
 #     def lobby(self):
 #         # Display the lobby UI and update selected characters
 #         print("Start of lobby function")
@@ -135,7 +136,6 @@ class Client:
 #             pygame.display.update()
 #             print("Updated display - End of Lobby Function")  # Debug print
 
-
     def character_assignment(self, character):
         # Assign characters to players
         print("Start of character_assignment function")
@@ -146,7 +146,6 @@ class Client:
         textRect = text.get_rect()
         textRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 4)
 
-        character = self.s.recv(1024).decode("utf-8")  # Receive the assigned character from the server
         self.character = character
 
         character_text = font.render(character, True, (255,255,255), (0,0,0))
@@ -197,7 +196,7 @@ class Client:
 
         options = ['Move', 'Suggest', 'Accuse']
 
-        game_board = GameBoard(self.gameUI, positions)
+        game_board = GameBoard(self.gameUI)
         game_log = GameLog(self.gameUI)
         player_options = PlayerOptions(self.gameUI, options)
         player_card = PlayerCard(self.gameUI, self.character, ['Card 1', 'Card 2', 'Card 3'])
