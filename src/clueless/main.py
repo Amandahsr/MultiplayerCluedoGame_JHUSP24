@@ -145,7 +145,10 @@ class Client:
 
         # Initialize player options
         options = ['Move', 'Suggest', 'Accuse']
-        player_options = PlayerOptions(self.gameUI, options)
+        # should call the game controller so that it has a list of options when the player chooses move, suggest, acuse
+        self.game_controls = GameController()
+
+        player_options = PlayerOptions(self.gameUI, options, self.game_controls, self.screen)
 
         # Create a positions data structure
         positions = {
