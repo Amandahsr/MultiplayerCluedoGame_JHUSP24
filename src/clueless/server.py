@@ -51,13 +51,15 @@ def threaded_client(conn, player_id):
 
             if not data:
                 print("Disconnected")
+                connections.remove(conn)
+                conn.close()
                 break
             else:
                 if reply.startswith("select_character:"):
                     # Extract the character name from the received message
                     character_name = reply.split(":")[1]
                     print(f"Character selected: {character_name}")  # Debug print
-
+                    
                     # Check if the character is available
                     if character_name in available_characters:
                         # Remove the character from the available list
@@ -65,7 +67,7 @@ def threaded_client(conn, player_id):
                         # Add the character to the selected list
                         selected_characters.append(character_name)
                         print(f"{character_name} has been selected.")
-
+                        self.gameController.initialize_player(character_name)
                         # Prepare a lobby update message with the selected characters
                         lobby_update = "lobby_update:" + ",".join(selected_characters)
             
@@ -86,6 +88,7 @@ def threaded_client(conn, player_id):
             break
         except ConnectionResetError as e:
             print("Connection reset by client")
+            connections.remove(conn)
             conn.close()
             break
 
@@ -93,6 +96,7 @@ def threaded_client(conn, player_id):
     #conn.close()
 
 player_id = 0
+gameController = GameController()
 # Main server loop
 while True:
     # Accept a new connection
