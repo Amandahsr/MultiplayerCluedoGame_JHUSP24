@@ -82,7 +82,7 @@ class PlayerCard:
 
 
 class PlayerOptions:
-    def __init__(self, gameUI, options, game_controls, screen):
+    def __init__(self, gameUI, game_controls, screen):
         self.options = options
         self.gameUI = gameUI
         self.header_font = pygame.font.Font('freesansbold.ttf', 28)
@@ -193,44 +193,73 @@ class PlayerOptions:
 
             pygame.display.update()
 
-        # def option_buttons(self, screen, surface, cards):
+            # I'm hoping that this resets the tile for new text
+            surface.fill((100, 100, 100))
+            text_color = (0, 0, 0)  # Set the text color to black
+            text_y = 15  # Starting y-coordinate for text
 
-        #     # need to pass screen in. cards is meant to be the otions in game control relative to the choice made. May have to hardcode. 
+            self.all_location_buttons =[]
 
-        #     self.next_move_buttons = []
-        #     for card in cards:
-        #         new_button = Button(screen, card, surface.get_width() // 2, text_y)
-                
-        #         # need to change where each new button gets drawn
-        #         text_y = text_y + 50
-        #         self.next_move_buttons.append(new_button)
+            # this should loop through locations and make a list of buttons
+            for location in display_locations:
+                new_button = Button(self.screen, location, surface.get_width() // 2, text_y)
+                text_y = text_y + 50
+                self.all_location_buttons.append(new_button)
 
-        #     running = True
-        #     while running:
+            if len(display_suspects) != 0:
+
+                self.all_suspect_buttons = []
+                for suspects in display_suspects:
+                    new_button = Button(self.screen, suspects, surface.get_width() // 2, text_y)
+                    text_y = text_y + 50
+                    self.all_suspect_buttons.append(new_button)
+
+            if len(display_weapons) != 0:
+
+                self.all_weapon_buttons = []
+                for weapons in display_weapons:
+                    new_button = Button(self.screen, weapons, surface.get_width() // 2, text_y)
+                    text_y = text_y + 50
+                    self.all_weapon_buttons.append(new_button)
+
+        running = True
+        while running:
         
-        #         for button in self.next_move_buttons:
-        #             button.draw_button()
+                for weapons_button in self.all_weapon_buttons:
+                     weapons_button.draw_button()
+                
+                for suspects_button in self.all_suspect_buttons:
+                    suspects_button.draw_button()
 
-        #     for event in pygame.event.get():
-        #         if event.type == pygame.QUIT:
-        #             print("Quit event detected")  # Debug print
-        #             running = False
-        #             pygame.quit()
-        #             sys.exit()
+                for location_button in self.all_location_buttons:
+                    location_button.draw_button()
 
-        #         elif event.type == pygame.MOUSEBUTTONDOWN:
-        #             mouse_x, mouse_y = pygame.mouse.get_pos()
-        #             for button in self.next_move_buttons:
-        #                 if button.check_button(mouse_x, mouse_y):
-        #                     #self.s.send(f"Select_move:{button.msg}".encode())
-        #                     print("move/suggest/accuse selected")  # Debug print
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    for weapons_button in self.all_weapon_buttons:
+                        if weapons_button.check_button(mouse_x, mouse_y):
+                            
+                            print("weapons selection made")  # Debug print
+                            weapon = weapons_button.msg
 
-        #                     # send selected move back to game controller for state changes
-        #                     selected_move = button.msg
-        #                     running = False
+                    for suspects_button in self.all_suspect_buttons:     
+                        if suspects_button.check_button(mouse_x, mouse_y):
 
+                            print("suspect selection made")  # Debug print
+                            suspect = suspects_button.msg
+
+                    for location_button in self.all_location_buttons:
+                        if location_button.check_button(mouse_x, mouse_y):
+                            
+                            print("location selection made")  # Debug print
+                            location = location_button.msg
+                            
+                running = False
+    
 
             pygame.display.update()
+
+            return(weapon, suspect, location)
 
 
 
@@ -241,6 +270,7 @@ class PlayerOptions:
         #     text_rect.center = (surface.get_width() // 2, text_y)
         #     surface.blit(text, text_rect)
         #     text_y += 50  # Increase y-coordinate for the next option
+        
         def option_buttons(self, screen, surface, cards):
 
             # need to pass screen in. cards is meant to be the otions in game control relative to the choice made. May have to hardcode. 
