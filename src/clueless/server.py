@@ -99,6 +99,20 @@ def threaded_client(conn, player_id, game_controller: GameController):
                     conn.send(current_locations.encode())
                     print("Current locations of players returned.")
 
+                elif reply.startswith(f"get_player_cards: {character_name}"):
+                    player_cards = None
+                    for player in game_controller.players:
+                        if player.character == character_name:
+                            player_cards = player.cards
+                    conn.send(str.encode(f"{player_cards}"))
+                    print("Current locations of players returned.")
+
+                elif reply.startswith(f"execute_move"):
+                    move = reply.split(";")[1]
+                    option = reply.split(";")[2]
+                    game_controller.execute_move(move, option, chatDisplay)
+                    print("Current locations of players returned.")
+
                 else:
                     print("Received: ", reply)
             print('REPLY: ', reply)

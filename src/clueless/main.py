@@ -24,6 +24,7 @@ class Client:
 
         # Tracks all buttons
         self.buttons = []
+        self.staticbuttons = []
 
         try:
             self.s.connect((self.server, self.port))
@@ -163,7 +164,10 @@ class Client:
         player_options_rect = pygame.Rect(half_width, half_height, half_width, half_height)
 
         # Initialize player cards
-        player_card = PlayerCard(self.gameUI, self.character, ['Card 1', 'Card 2', 'Card 3'])
+        self.s.send(f"get_player_cards: {self.character}".encode())
+        server_msg = self.s.recv(1024).decode("utf-8")
+        available_cards = ast.literal_eval(server_msg)
+        player_card = PlayerCard(self.gameUI, self.character, available_cards)
 
         # Initialize player options
         self.s.send("valid_moves".encode())
@@ -206,12 +210,63 @@ class Client:
             player_options.draw(self.screen.subsurface(player_options_rect))
             player_card.draw(self.screen.subsurface(player_card_rect))
 
-            # Initialize player options buttons
+            # Initialize player cards buttons
+            start_y = 50
+            for card in available_cards:
+                self.staticbuttons.append(Button(self.screen, card, 900, start_y, ""))
+                start_y += 10
+
+            for button in self.staticbuttons:
+                button.draw_button()
+
+            # Initialize player options1 buttons #FIX BUTTON COORDINATE ISSUE#
+            start_y = 500
             for move in valid_moves:
-                self.buttons.append(Button(self.screen.subsurface(player_options_rect), move, 800, 500, ""))
+                self.buttons.append(Button(self.screen, str(move), 900, start_y, "show_options"))
+                start_y += 50
 
             for button in self.buttons:
                 button.draw_button()
+
+            # Track which button is being pressed
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    print("Quit event detected")  # Debug print
+                    running = False
+                    pygame.quit()
+                    sys.exit(0)
+
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    for button in self.buttons:
+                        if button.command_function == "show_options":
+                            available_options = None
+                            print(f"BUTTON MSG: {button.msg}")
+                            if button.msg == "Move To Hallway":
+                                available_options = options["Hallways"]
+                            elif button.msg == "Move To Room and Suggest":
+                                available_options = options["Rooms"]
+
+                            move = button.msg
+                            # Clear valid moves button
+                            self.buttons = []
+
+                            # Initialize player options2 buttons
+                            start_y = 500
+                            for option in available_options:
+                                self.buttons.append(Button(self.screen, f"{move};{option}", 900, start_y, "execute_move"))
+                                start_y += 50
+                            for button in self.buttons:
+                                button.draw_button()
+
+                        elif button.check_button(mouse_x, mouse_y):
+                            self.s.send(f"{button.command_function};{button.msg}".encode())
+                            print("Start game message sent to server")  # Debug print
+                            running = False
+                    
+
+            if (running):
+                pygame.display.update()
 
             # Refresh the screen
             pygame.display.flip()
