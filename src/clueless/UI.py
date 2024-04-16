@@ -108,20 +108,28 @@ class PlayerOptions:
         header_rect = header_text.get_rect()
         header_rect.center = (surface.get_width() // 2, text_y)
         surface.blit(header_text, header_rect)
-        text_y += 100  # Increase y-coordinate to draw options text
+        text_y += 30  # Increase y-coordinate to draw options text
 
+        # m is moves, o in options
+        m,o = self.game_controls.valid_moves()
+        
 
-        move = Button(self.screen, "Move", surface.get_width() // 2, text_y )
+        # update to be more dynamic, 5 options 
+
+        # pass
+        move1 = Button(self.screen, m[0], surface.get_width() // 2, text_y )
         text_y = text_y + 50
-        suggest = Button(self.screen, "Suggest", surface.get_width() // 2, text_y)
+        # accuse
+        move2 = Button(self.screen, m[1], surface.get_width() // 2, text_y)
         text_y = text_y + 50
-        accuse = Button(self.screen, "Accuse", surface.get_width() // 2, text_y)
+        #move/suggest
+        move3 = Button(self.screen, m[2], surface.get_width() // 2, text_y)
 
         running = True
         while running:
-            move.draw_button()
-            suggest.draw_button()
-            accuse.draw_button()
+            move1.draw_button()
+            move2.draw_button()
+            move3.draw_button()
             
             # took this block from main, needs editing. I just put it in 
             for event in pygame.event.get():
@@ -133,25 +141,50 @@ class PlayerOptions:
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
-                    if move.check_button(mouse_x, mouse_y):
-                        
-                        running = False
 
-                        cards = self.game_controls.moves
+                    if move1.check_button(mouse_x, mouse_y):
+        
+                        return_value = move1.msg
+                    
+                        # this might need to move
+                        running = False
+                        
+                        return(return_value)
                         
                      
-                    elif suggest.check_button(mouse_x, mouse_y):
-                        
-                        running = False
+                    elif move2.check_button(mouse_x, mouse_y):
 
-                        cards = self.game_controls.cards
+                        # in the future, will need additional if statements
+                        
+                        return_value = move1.msg
+                    
+                        # this might need to move
+                        running = False
+                        
+                        return(return_value)
                    
                        
-                    elif accuse.check_button(mouse_x, mouse_y):
+                    elif move3.check_button(mouse_x, mouse_y):
                       
-                        running = False
+                        if m[2] == "Move To Hallway":
+                            # keys = self.game_controls.cards.getKeys()
+                            # cards = [ self.game_controls.cards[key] for key in keys]
 
-                        cards = self.game_controls.cards
+                            display_options = o.get("Hallways")
+                        
+                        elif m[2] == "Move To Room and Suggest":
+
+                            display_locations = o.get("Rooms")
+                            display_suspects = self.game_controls.cards.get("suspect")
+                            display_weapons = self.game_controls.cards.get("weapon")
+
+                        elif m[2] == "Take Secret Passageway and Suggest":
+
+                            display_locations = o.get("Rooms_Passageway")
+                            display_suspects = self.game_controls.cards.get("suspect")
+                            display_weapons = self.game_controls.cards.get("weapon")
+
+                        running = False
                        
 
                     # call the function that clears the screen and plots the next set of options based on what the user selected. 
@@ -160,6 +193,54 @@ class PlayerOptions:
 
             pygame.display.update()
 
+        # def option_buttons(self, screen, surface, cards):
+
+        #     # need to pass screen in. cards is meant to be the otions in game control relative to the choice made. May have to hardcode. 
+
+        #     self.next_move_buttons = []
+        #     for card in cards:
+        #         new_button = Button(screen, card, surface.get_width() // 2, text_y)
+                
+        #         # need to change where each new button gets drawn
+        #         text_y = text_y + 50
+        #         self.next_move_buttons.append(new_button)
+
+        #     running = True
+        #     while running:
+        
+        #         for button in self.next_move_buttons:
+        #             button.draw_button()
+
+        #     for event in pygame.event.get():
+        #         if event.type == pygame.QUIT:
+        #             print("Quit event detected")  # Debug print
+        #             running = False
+        #             pygame.quit()
+        #             sys.exit()
+
+        #         elif event.type == pygame.MOUSEBUTTONDOWN:
+        #             mouse_x, mouse_y = pygame.mouse.get_pos()
+        #             for button in self.next_move_buttons:
+        #                 if button.check_button(mouse_x, mouse_y):
+        #                     #self.s.send(f"Select_move:{button.msg}".encode())
+        #                     print("move/suggest/accuse selected")  # Debug print
+
+        #                     # send selected move back to game controller for state changes
+        #                     selected_move = button.msg
+        #                     running = False
+
+
+            pygame.display.update()
+
+
+
+        # # Draw player options adjusted to subsurface
+        # for option in self.options:
+        #     text = self.option_font.render(option, True, text_color)
+        #     text_rect = text.get_rect()
+        #     text_rect.center = (surface.get_width() // 2, text_y)
+        #     surface.blit(text, text_rect)
+        #     text_y += 50  # Increase y-coordinate for the next option
         def option_buttons(self, screen, surface, cards):
 
             # need to pass screen in. cards is meant to be the otions in game control relative to the choice made. May have to hardcode. 
