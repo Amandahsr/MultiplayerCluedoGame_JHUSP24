@@ -1,5 +1,7 @@
 import socket
-from _thread import *
+import json
+from _thread import start_new_thread
+from GameController import GameController
 import sys
 
 
@@ -21,25 +23,25 @@ s.listen(2)
 print("Waiting for a connection, Server Started")
 
 # Define available characters and selected characters lists
-available_characters = ["Miss Scarlet", "Colonel Mustard", "Mrs. White", "Mr. Green", "Mrs. Peacock", "Professor Plum"]
+available_characters = ["Miss Scarlet", "Col. Mustard", "Mrs. White", "Mr. Green", "Mrs. Peacock", "Professor Plum"]
 selected_characters = []
 
 # List to store client connections
 connections = []
 
 # Function to handle each client connection
-def threaded_client(conn, player_id):
+def threaded_client(conn, player_id, game_controller: GameController):
     global connections
 
-    character_assignments = ["Miss Scarlet", "Colonel Mustard", "Mrs. White", "Mr. Green", "Mrs. Peacock", "Professor Plum"]
+    character_assignments = ["Miss Scarlet", "Col. Mustard", "Mrs. White", "Mr. Green", "Mrs. Peacock", "Professor Plum"]
     character_name = character_assignments[player_id]
     
     
     # Send a connection message to the client
     conn.send(str.encode("Connected to server"))
 
-    # Send the character name to the client
-    conn.send(str.encode(character_name))
+    # # Send the character name to the client
+    # conn.send(str.encode(character_name))
     
     while True:
         try:
@@ -67,19 +69,36 @@ def threaded_client(conn, player_id):
                         # Add the character to the selected list
                         selected_characters.append(character_name)
                         print(f"{character_name} has been selected.")
-                        self.gameController.initialize_player(character_name)
-                        # Prepare a lobby update message with the selected characters
-                        lobby_update = "lobby_update:" + ",".join(selected_characters)
+                        game_controller.initialize_player(character_name)
+                        # # Prepare a lobby update message with the selected characters
+                        # lobby_update = "lobby_update:" + ",".join(selected_characters)
             
-                        # Send the lobby update message to all connected clients
-                        for client in connections:
-                            client.send(str.encode(lobby_update))
-                            print("Lobby update sent to clients")  # Debug print
+                        # # Send the lobby update message to all connected clients
+                        # for client in connections:
+                        #     client.send(str.encode(lobby_update))
+                        #     print("Lobby update sent to clients")  # Debug print
+
                 elif reply.startswith("start_game"):
                     print("Game start button pressed")
-                    for client in connections:
-                        client.send(str.encode("Game has started."))
-                        print("Game start message sent to clients")  # Debug print
+                    game_controller.initialize_cards()
+                    game_controller.initialize_turns()
+                    # for client in connections:
+                        # client.send(str.encode("Game has started."))
+                        # print("Game start message sent to clients")  # Debug print
+
+                elif reply.startswith("valid_moves"):
+                    valid_moves, options = game_controller.valid_moves()
+                    conn.send(str.encode(f"{str(valid_moves)};{str(options)}"))
+                    print("Valid moves returned.")
+
+                elif reply.startswith("get_current_players"):
+                    current_locations = {}
+                    for player in game_controller.players:
+                        current_locations[player.character] = player.location
+                    current_locations = json.dumps(current_locations)
+                    conn.send(current_locations.encode())
+                    print("Current locations of players returned.")
+
                 else:
                     print("Received: ", reply)
             print('REPLY: ', reply)
@@ -96,7 +115,9 @@ def threaded_client(conn, player_id):
     #conn.close()
 
 player_id = 0
-gameController = GameController()
+game_controller = GameController()
+game_controller.create_answer()
+
 # Main server loop
 while True:
     # Accept a new connection
@@ -107,7 +128,7 @@ while True:
     connections.append(conn)
 
     # Start a new thread to handle the client connection
-    start_new_thread(threaded_client, (conn, player_id))
+    start_new_thread(threaded_client, (conn, player_id, game_controller))
     player_id += 1
 
 
