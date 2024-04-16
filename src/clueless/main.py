@@ -11,7 +11,7 @@ import socket
 class Client:
     def __init__(self):
         pygame.init()
-        self.gameController = GameController()
+
         self.gameUI = UI()
         self.character = None
         self.screen = pygame.display.set_mode((self.gameUI.screen_width, self.gameUI.screen_height), pygame.RESIZABLE)
@@ -126,13 +126,6 @@ class Client:
 
         clock = pygame.time.Clock()
         
-        # Initialize the players
-        self.gameController.initialize_player("Miss Scarlet")
-        self.gameController.initialize_player("Col. Mustard")
-        self.gameController.initialize_player("Mrs. White")
-        self.gameController.initialize_player("Mr. Green")
-        self.gameController.initialize_player("Mrs. Peacock")
-        self.gameController.initialize_player("Professor Plum")
 
         # Create a dictionary to hold the current locations of each character
         current_locations = {}
