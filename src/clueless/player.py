@@ -11,6 +11,8 @@ class Player:
         self.is_connected = is_connected
         self.in_room = in_room
         self.in_corner_room = in_corner_room
+        self.start = start
+        self.moved = moved
 
     def get_location(self):
         return self.location
