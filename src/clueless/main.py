@@ -1,6 +1,7 @@
 import sys
-from UI import UI, Button, PlayerCard, PlayerOptions, GameBoard, chatDisplay
+from UI import UI, Button, PlayerCard, PlayerOptions, GameBoard, chatDisplay, CharacterIcon
 from os import environ
+from GameController import *
 
 environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
@@ -12,8 +13,10 @@ class Client:
         pygame.init()
 
         self.gameUI = UI()
+        self.character = None
         self.screen = pygame.display.set_mode((self.gameUI.screen_width, self.gameUI.screen_height), pygame.RESIZABLE)
         pygame.display.set_caption("Clue-Less")
+
 
         self.server = "localhost"
         self.port = 5555
@@ -75,7 +78,6 @@ class Client:
             if (running):
                 pygame.display.update()
         
-
     def character_assignment(self, character):
         # Assign characters to players
         print("Start of character_assignment function")
@@ -119,12 +121,24 @@ class Client:
                 pygame.display.update()
     
     def main_game(self):
-        print("Start of main_game function")
         pygame.init()
-
         self.screen = pygame.display.set_mode((self.gameUI.screen_width, self.gameUI.screen_height), pygame.RESIZABLE)
-        BLACK = (0, 0, 0)
+        BLACK = (0, 0, 0)  
+        WHITE = (255, 255, 255)
+
         clock = pygame.time.Clock()
+        
+
+        # Create a dictionary to hold the current locations of each character
+        current_locations = {}
+        for player in self.gameController.players:
+            current_locations[player.character] = player.location
+
+        options = ['Move', 'Suggest', 'Accuse']
+
+        game_board = GameBoard(self.gameUI, current_locations)
+        player_options = PlayerOptions(self.gameUI, options)
+        player_card = PlayerCard(self.gameUI, self.character, ['Card 1', 'Card 2', 'Card 3'])
 
         # Subsection screen into 4 parts
         half_width = self.gameUI.screen_width // 2
@@ -137,24 +151,7 @@ class Client:
         # Initialize chat log display
         chat_display = chatDisplay(self.screen, chat_display_rect.x + chat_display_rect.width // 2,
                                     chat_display_rect.y + chat_display_rect.height // 2)
-        chat_display.rect = chat_display_rect                
-
-        # Initialize game board
-        game_board = GameBoard(self.gameUI)
-
-        # Initialize player cards
-        player_card = PlayerCard(self.gameUI, self.character, ['Card 1', 'Card 2', 'Card 3'])
-
-        # Initialize player options
-        options = ['Move', 'Suggest', 'Accuse']
-        player_options = PlayerOptions(self.gameUI, options)
-
-        # Create a positions data structure
-        positions = {
-            'player1': (0, 0),
-            'player2': (1, 0),
-            # Add more positions as needed
-        }
+        chat_display.rect = chat_display_rect     
 
         # Game loop
         running = True
@@ -162,6 +159,17 @@ class Client:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+
+            # Update the current_locations dictionary
+            current_locations = {}
+            for player in self.gameController.players:
+                current_locations[player.character] = player.location
+
+            # Drawing the different sections
+            pygame.draw.rect(self.screen, BLACK, game_board_rect)
+            pygame.draw.rect(self.screen, BLACK, chat_display_rect)
+            pygame.draw.rect(self.screen, BLACK, player_card_rect)
+            pygame.draw.rect(self.screen, BLACK, player_options_rect)
 
             # Redraw UI components onto their respective sections
             self.screen.fill(BLACK)
@@ -189,14 +197,14 @@ if __name__ == "__main__":
 # <<<<<<< client-debug
 #             print("Start of While loop inside lobby function")  # Debug print
 #             self.screen.fill((0,0,0))
-
+            
 #             # Add header text
 #             header_font = pygame.font.Font('freesansbold.ttf', 40)
 #             header_text = header_font.render("Pregame Lobby", True, (255,255,255), (0,0,0))
 #             header_text_rect = header_text.get_rect()
 #             header_text_rect.center = (self.gameUI.screen_width // 2, 50)
 #             self.screen.blit(header_text, header_text_rect)
-
+            
 # =======
 #             self.screen.fill((0, 0, 0))
 # >>>>>>> main
