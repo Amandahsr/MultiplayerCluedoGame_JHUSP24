@@ -151,7 +151,27 @@ class Client:
         # Initialize chat log display
         chat_display = chatDisplay(self.screen, chat_display_rect.x + chat_display_rect.width // 2,
                                     chat_display_rect.y + chat_display_rect.height // 2)
-        chat_display.rect = chat_display_rect     
+        chat_display.rect = chat_display_rect                
+
+        # Initialize game board
+        game_board = GameBoard(self.gameUI)
+
+        # Initialize player cards
+        player_card = PlayerCard(self.gameUI, self.character, ['Card 1', 'Card 2', 'Card 3'])
+
+        # Initialize player options
+        options = ['Move', 'Suggest', 'Accuse']
+        # should call the game controller so that it has a list of options when the player chooses move, suggest, acuse
+        self.game_controls = GameController()
+
+        player_options = PlayerOptions(self.gameUI, options, self.game_controls, self.screen)
+
+        # Create a positions data structure
+        positions = {
+            'player1': (0, 0),
+            'player2': (1, 0),
+            # Add more positions as needed
+        }
 
         # Game loop
         running = True
