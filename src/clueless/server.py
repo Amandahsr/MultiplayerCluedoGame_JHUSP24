@@ -36,7 +36,6 @@ def threaded_client(conn, player_id, game_controller: GameController):
     character_assignments = ["Miss Scarlet", "Col. Mustard", "Mrs. White", "Mr. Green", "Mrs. Peacock", "Professor Plum"]
     character_name = character_assignments[player_id]
     
-    
     # Send a connection message to the client
     conn.send(str.encode("Connected to server"))
 
@@ -56,6 +55,7 @@ def threaded_client(conn, player_id, game_controller: GameController):
                 connections.remove(conn)
                 conn.close()
                 break
+
             else:
                 if reply.startswith("select_character:"):
                     # Extract the character name from the received message
@@ -108,9 +108,13 @@ def threaded_client(conn, player_id, game_controller: GameController):
                     print("Current locations of players returned.")
 
                 elif reply.startswith(f"execute_move"):
+                    print(f"Execute move: {reply}")
                     move = reply.split(";")[1]
                     option = reply.split(";")[2]
-                    game_controller.execute_move(move, option, chatDisplay)
+                    option = json.dumps(option)
+                    conn.send(option().encode())
+
+                    #game_controller.execute_move(move, option, chatDisplay)
                     print("Current locations of players returned.")
 
                 else:

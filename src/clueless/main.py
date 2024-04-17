@@ -1,5 +1,6 @@
 import sys
 import ast
+import json
 from UI import UI, Button, PlayerCard, PlayerOptions, GameBoard, chatDisplay, CharacterIcon
 from os import environ
 from GameController import *
@@ -24,6 +25,7 @@ class Client:
 
         # Tracks all buttons
         self.buttons = []
+        self.buttons_options = []
         self.staticbuttons = []
 
         try:
@@ -173,7 +175,7 @@ class Client:
         self.s.send("valid_moves".encode())
         server_msg = self.s.recv(1024).decode("utf-8")
         valid_moves = ast.literal_eval(server_msg.split(";")[0])
-        options = server_msg.split(";")[1]
+        options = ast.literal_eval(server_msg.split(";")[1])
         player_options = PlayerOptions(self.gameUI, valid_moves, self.screen)
 
         # Initialize chat log display
@@ -192,6 +194,7 @@ class Client:
 
         # Game loop
         running = True
+        options_showed = False
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -219,14 +222,19 @@ class Client:
             for button in self.staticbuttons:
                 button.draw_button()
 
-            # Initialize player options1 buttons #FIX BUTTON COORDINATE ISSUE#
-            start_y = 500
-            for move in valid_moves:
-                self.buttons.append(Button(self.screen, str(move), 900, start_y, "show_options"))
-                start_y += 50
+            # Initialize player options1 buttons
+            if not options_showed:
+                start_y = 500
+                for move in valid_moves:
+                    self.buttons.append(Button(self.screen, str(move), 900, start_y, "show_options"))
+                    start_y += 50
 
-            for button in self.buttons:
-                button.draw_button()
+                for button in self.buttons:
+                    button.draw_button()
+            
+            else:
+                for button in self.buttons_options:
+                    button.draw_button()
 
             # Track which button is being pressed
             for event in pygame.event.get():
@@ -239,30 +247,32 @@ class Client:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     for button in self.buttons:
-                        if button.command_function == "show_options":
-                            available_options = None
-                            print(f"BUTTON MSG: {button.msg}")
-                            if button.msg == "Move To Hallway":
-                                available_options = options["Hallways"]
-                            elif button.msg == "Move To Room and Suggest":
-                                available_options = options["Rooms"]
+                        curr_move = None
 
-                            move = button.msg
-                            # Clear valid moves button
-                            self.buttons = []
+                        if button.check_button(mouse_x, mouse_y):
+                            # For player options button1
+                            if button.command_function == "show_options":
+                                available_options = []
+                                options_showed = True
+                                curr_move = button.msg
 
-                            # Initialize player options2 buttons
-                            start_y = 500
-                            for option in available_options:
-                                self.buttons.append(Button(self.screen, f"{move};{option}", 900, start_y, "execute_move"))
-                                start_y += 50
-                            for button in self.buttons:
-                                button.draw_button()
+                                # Extract options based on move clicked
+                                if button.msg == "Move To Hallway":
+                                    available_options.append(options["Hallways"])
 
-                        elif button.check_button(mouse_x, mouse_y):
-                            self.s.send(f"{button.command_function};{button.msg}".encode())
-                            print("Start game message sent to server")  # Debug print
-                            running = False
+                                elif button.msg == "Move To Room and Suggest":
+                                    available_options.append(options["Rooms"])
+
+                                # Initialize player options2 buttons
+                                start_y = 500
+                                for option in available_options:
+                                    self.buttons_options.append(Button(self.screen, option, 900, start_y, "execute_move"))
+                                    start_y += 50
+
+                            # For all other buttons
+                            else:
+                                self.s.send(f"{button.command_function};{button.msg}".encode())
+                                print("Start game message sent to server")  # Debug print
                     
 
             if (running):
