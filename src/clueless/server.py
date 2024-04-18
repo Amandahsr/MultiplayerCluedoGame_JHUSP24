@@ -29,19 +29,27 @@ selected_characters = []
 # List to store client connections
 connections = []
 
+
 # Function to handle each client connection
 def threaded_client(conn, player_id, game_controller: GameController):
     global connections
 
-    character_assignments = ["Miss Scarlet", "Col. Mustard", "Mrs. White", "Mr. Green", "Mrs. Peacock", "Professor Plum"]
+    character_assignments = [
+        "Miss Scarlet",
+        "Col. Mustard",
+        "Mrs. White",
+        "Mr. Green",
+        "Mrs. Peacock",
+        "Professor Plum",
+    ]
     character_name = character_assignments[player_id]
-    
+
     # Send a connection message to the client
     conn.send(str.encode("Connected to server"))
 
     # # Send the character name to the client
     # conn.send(str.encode(character_name))
-    
+
     while True:
         try:
             # Receive data from the client
@@ -61,7 +69,7 @@ def threaded_client(conn, player_id, game_controller: GameController):
                     # Extract the character name from the received message
                     character_name = reply.split(":")[1]
                     print(f"Character selected: {character_name}")  # Debug print
-                    
+
                     # Check if the character is available
                     if character_name in available_characters:
                         # Remove the character from the available list
@@ -72,7 +80,7 @@ def threaded_client(conn, player_id, game_controller: GameController):
                         game_controller.initialize_player(character_name)
                         # # Prepare a lobby update message with the selected characters
                         # lobby_update = "lobby_update:" + ",".join(selected_characters)
-            
+
                         # # Send the lobby update message to all connected clients
                         # for client in connections:
                         #     client.send(str.encode(lobby_update))
@@ -83,8 +91,8 @@ def threaded_client(conn, player_id, game_controller: GameController):
                     game_controller.initialize_cards()
                     game_controller.initialize_turns()
                     # for client in connections:
-                        # client.send(str.encode("Game has started."))
-                        # print("Game start message sent to clients")  # Debug print
+                    # client.send(str.encode("Game has started."))
+                    # print("Game start message sent to clients")  # Debug print
 
                 elif reply.startswith("valid_moves"):
                     valid_moves, options = game_controller.valid_moves()
@@ -112,14 +120,17 @@ def threaded_client(conn, player_id, game_controller: GameController):
                     move = reply.split(";")[1]
                     option = reply.split(";")[2]
                     option = json.dumps(option)
-                    conn.send(option().encode())
 
-                    #game_controller.execute_move(move, option, chatDisplay)
+                    # Execute move
+                    game_controller.execute_move(move, option)
+
+                    # Send game state change message back
+                    conn.send(str.encode(game_controller.chat_msg))
                     print("Current locations of players returned.")
 
                 else:
                     print("Received: ", reply)
-            print('REPLY: ', reply)
+            print("REPLY: ", reply)
         except KeyError as e:
             print("Error handling data from client:", e)
             break
@@ -130,7 +141,8 @@ def threaded_client(conn, player_id, game_controller: GameController):
             break
 
     print("Lost connection")
-    #conn.close()
+    # conn.close()
+
 
 player_id = 0
 game_controller = GameController()
@@ -150,9 +162,7 @@ while True:
     player_id += 1
 
 
-
-
-'''
+"""
 class Server:
     game_board = {
         "Study_Room": [],
@@ -194,4 +204,4 @@ class Server:
         self.game_board['HL_Hall'] = [str(MissScarlet)]
         
         print(self.game_board)
-'''
+"""
