@@ -4,11 +4,13 @@ import json
 from UI import UI, Button, PlayerCard, PlayerOptions, GameBoard, chatDisplay, CharacterIcon
 from os import environ
 from GameController import *
-
-environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
 import socket
+environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 
+# Set colors
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
 
 class Client:
     def __init__(self):
@@ -42,14 +44,18 @@ class Client:
     # def clear_server_msgs(self):
     #     while self.s.recv(1024):
     #         pass
+    
+    def check_turn(self):
+        self.s.send("get_current_turn".encode())
+        server_msg = self.s.recv(1024).decode("utf-8")
+        return server_msg == self.character
 
     def main_menu(self):
         print("Start of main_menu function")  # Debug print
-        BLACK = (0, 0, 0)
 
         # Display the main menu UI
         font = pygame.font.Font("freesansbold.ttf", 32)
-        text = font.render("Welcome! Please select a character:", True, (255, 255, 255), (0, 0, 0))
+        text = font.render("Welcome! Please select a character:", True, WHITE, BLACK)
         textRect = text.get_rect()
         textRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 4)
 
@@ -66,7 +72,7 @@ class Client:
 
         running = True
         while running:
-            self.screen.fill((0, 0, 0))
+            self.screen.fill(BLACK)
             self.screen.blit(text, textRect)
             for button in self.buttons:
                 button.draw_button()
@@ -85,28 +91,25 @@ class Client:
                     for button in self.buttons:
                         if button.check_button(mouse_x, mouse_y):
                             self.s.send(f"{button.command_function}:{button.msg}".encode())
-                            print("Character selection sent to server")  # Debug print
+                            print(f"{button.msg} selection sent to server")  # Debug print
                             character = button.msg
                             running = False
-                            self.character_assignment(character)
+                            self.lobby(character)
 
             if running:
                 pygame.display.update()
 
-    def character_assignment(self, character):
-        # Assign characters to players
-        print("Start of character_assignment function")
-        BLACK = (0, 0, 0)
+    def lobby(self, character):
+        print("Start of lobby scene")
+        
+        self.character = character
 
         # Display the character assignment UI
         font = pygame.font.Font("freesansbold.ttf", 32)
-        text = font.render("Character Selection:", True, (255, 255, 255), (0, 0, 0))
+        text = font.render("Your Selected Character", True, WHITE, BLACK)
         textRect = text.get_rect()
         textRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 4)
-
-        self.character = character
-
-        character_text = font.render(character, True, (255, 255, 255), (0, 0, 0))
+        character_text = font.render(character, True, WHITE, BLACK)
         characterRect = character_text.get_rect()
         characterRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 2)
 
@@ -117,7 +120,7 @@ class Client:
 
         running = True
         while running:
-            self.screen.fill((0, 0, 0))
+            self.screen.fill(BLACK)
             self.screen.blit(text, textRect)
             self.screen.blit(character_text, characterRect)
             start_button.draw_button()
@@ -145,11 +148,11 @@ class Client:
                 pygame.display.update()
 
     def main_game(self):
+        print("Start of main gameplay scene")
         pygame.init()
 
         # Initialize screen
         self.screen = pygame.display.set_mode((self.gameUI.screen_width, self.gameUI.screen_height), pygame.RESIZABLE)
-        BLACK = (0, 0, 0)
         clock = pygame.time.Clock()
         chat_msg = None
 
@@ -173,6 +176,7 @@ class Client:
         server_msg = self.s.recv(1024).decode("utf-8")
         available_cards = ast.literal_eval(server_msg)
         player_card = PlayerCard(self.gameUI, self.character, available_cards)
+        print(f"Player cards: {available_cards}")
 
         # Obtain valid player moves/options from server
         self.s.send("valid_moves".encode())
@@ -180,6 +184,7 @@ class Client:
         valid_moves = ast.literal_eval(server_msg.split(";")[0])
         options = ast.literal_eval(server_msg.split(";")[1])
         player_options = PlayerOptions(self.gameUI, valid_moves, self.screen)
+        print(f"Valid moves: {valid_moves}; Options: {options}")
 
         # Initialize chat log display
         chat_display = chatDisplay(
@@ -194,6 +199,10 @@ class Client:
         # Keep track of game status and if a move button has been clicked
         running = True
         options_showed = False
+
+        # Check if this player has the current turn
+        is_turn = self.check_turn()
+        print(f"It is your turn: {is_turn}") 
 
         # Game loop
         while running:
@@ -211,7 +220,7 @@ class Client:
             player_card.draw(self.screen.subsurface(player_card_rect))
 
             # Render available moves button
-            if not options_showed:
+            if not options_showed and is_turn:
                 start_x = 900
                 start_y = 500
                 for move in valid_moves:
@@ -227,9 +236,22 @@ class Client:
                     button.draw_button()
 
             # Render available options button after a move is selected
-            else:
+            elif options_showed and is_turn:
                 for button in self.buttons_options:
                     button.draw_button()
+            
+            # If it isn't the player's turn, display a message to wait
+            else:
+                start_x = 800
+                start_y = 550
+                position = (start_x, start_y)
+                # Create a Pygame font object
+                font = pygame.font.Font(None, 45)
+                # Render the text
+                text = font.render("Wait Your Turn", 1, BLACK)
+                # Draw the text on the screen
+                self.screen.blit(text, position)
+                
 
             # Track mouse activity
             for event in pygame.event.get():
@@ -282,7 +304,7 @@ class Client:
                             # For start button
                             else:
                                 self.s.send(f"{button.command_function};{button.msg}".encode())
-                                print("Start game message sent to server")  # Debug print
+
 
                     for button in self.buttons_options:
                         if button.check_button(mouse_x, mouse_y):

@@ -3,7 +3,6 @@ from collections import deque
 from typing import Dict
 import pygame
 import sys
-
 environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 
 

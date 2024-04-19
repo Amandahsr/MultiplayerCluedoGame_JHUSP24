@@ -19,7 +19,7 @@ except socket.error as e:
     print(str(e))
 
 # Listen for incoming connections
-s.listen(2)
+s.listen(6)
 print("Waiting for a connection, Server Started")
 
 # Define available characters and selected characters lists
@@ -56,7 +56,7 @@ def threaded_client(conn, player_id, game_controller: GameController):
             print("Waiting for data from client")  # Debug print
             data = conn.recv(2048)
             reply = data.decode("utf-8")
-            print(f"Received data: {reply}")  # Debug print
+            print(f"Received: {reply}")  # Debug print
 
             if not data:
                 print("Disconnected")
@@ -78,26 +78,29 @@ def threaded_client(conn, player_id, game_controller: GameController):
                         selected_characters.append(character_name)
                         print(f"{character_name} has been selected.")
                         game_controller.initialize_player(character_name)
-                        # # Prepare a lobby update message with the selected characters
-                        # lobby_update = "lobby_update:" + ",".join(selected_characters)
-
-                        # # Send the lobby update message to all connected clients
-                        # for client in connections:
-                        #     client.send(str.encode(lobby_update))
-                        #     print("Lobby update sent to clients")  # Debug print
 
                 elif reply.startswith("start_game"):
                     print("Game start button pressed")
-                    game_controller.initialize_cards()
-                    game_controller.initialize_turns()
-                    # for client in connections:
-                    # client.send(str.encode("Game has started."))
-                    # print("Game start message sent to clients")  # Debug print
+                    if not game_controller.initialized:
+                        print("Initializing cards and turns")
+                        game_controller.initialize_cards()
+                        game_controller.initialize_turns()
+                        game_controller.initialized = True
+                    #for client in connections:
+                    #conn.send(str.encode("proceed_to_main_game"))
+                    #print(f"proceed_to_main_game sent to {conn}")
+                    else:
+                        pass
 
                 elif reply.startswith("valid_moves"):
                     valid_moves, options = game_controller.valid_moves()
                     conn.send(str.encode(f"{str(valid_moves)};{str(options)}"))
                     print("Valid moves returned.")
+                    print(f"Current turn: {game_controller.current_player}")
+
+                elif reply.startswith("get_current_turn"):
+                    conn.send(str(game_controller.current_player).encode())
+                    print("Current turn returned.")
 
                 elif reply.startswith("get_current_players"):
                     current_locations = {}
@@ -130,7 +133,7 @@ def threaded_client(conn, player_id, game_controller: GameController):
 
                 else:
                     print("Received: ", reply)
-            print("REPLY: ", reply)
+
         except KeyError as e:
             print("Error handling data from client:", e)
             break
