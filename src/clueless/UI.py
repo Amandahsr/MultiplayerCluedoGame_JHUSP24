@@ -186,6 +186,12 @@ class GameBoard:
             "Ballroom": (center_x - 5, center_y + 130),
             "BK_Hall": (center_x + 95, center_y + 135),
             "Kitchen": (center_x + 200, center_y + 130),
+            "MS_Start": (center_x + 95, center_y - 170),
+            "CM_Start": (center_x + 245, center_y - 70),
+            "MW_Start": (center_x + 95, center_y + 170),
+            "MG_Start": (center_x - 110, center_y + 170),
+            "MP_Start": (center_x - 250, center_y + 70),
+            "PP_Start": (center_x - 250, center_y - 70),
         }
 
         # Iterate over all characters and their positions to draw them
