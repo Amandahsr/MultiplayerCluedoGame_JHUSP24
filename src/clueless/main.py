@@ -4,11 +4,13 @@ import json
 from UI import UI, Button, PlayerCard, PlayerOptions, GameBoard, chatDisplay, CharacterIcon
 from os import environ
 from GameController import *
-
-environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
 import socket
+environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 
+# Set colors
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
 
 class Client:
     def __init__(self):
@@ -45,11 +47,10 @@ class Client:
 
     def main_menu(self):
         print("Start of main_menu function")  # Debug print
-        BLACK = (0, 0, 0)
 
         # Display the main menu UI
         font = pygame.font.Font("freesansbold.ttf", 32)
-        text = font.render("Welcome! Please select a character:", True, (255, 255, 255), (0, 0, 0))
+        text = font.render("Welcome! Please select a character:", True, WHITE, BLACK)
         textRect = text.get_rect()
         textRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 4)
 
@@ -66,7 +67,7 @@ class Client:
 
         running = True
         while running:
-            self.screen.fill((0, 0, 0))
+            self.screen.fill(BLACK)
             self.screen.blit(text, textRect)
             for button in self.buttons:
                 button.draw_button()
@@ -88,25 +89,23 @@ class Client:
                             print("Character selection sent to server")  # Debug print
                             character = button.msg
                             running = False
-                            self.character_assignment(character)
+                            self.lobby(character)
 
             if running:
                 pygame.display.update()
 
-    def character_assignment(self, character):
-        # Assign characters to players
-        print("Start of character_assignment function")
-        BLACK = (0, 0, 0)
+    def lobby(self, character):
+        print("Start of lobby scene")
 
         # Display the character assignment UI
         font = pygame.font.Font("freesansbold.ttf", 32)
-        text = font.render("Character Selection:", True, (255, 255, 255), (0, 0, 0))
+        text = font.render("Character Selection:", True, WHITE, BLACK)
         textRect = text.get_rect()
         textRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 4)
 
         self.character = character
 
-        character_text = font.render(character, True, (255, 255, 255), (0, 0, 0))
+        character_text = font.render(character, True, WHITE, BLACK)
         characterRect = character_text.get_rect()
         characterRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 2)
 
@@ -117,7 +116,7 @@ class Client:
 
         running = True
         while running:
-            self.screen.fill((0, 0, 0))
+            self.screen.fill(BLACK)
             self.screen.blit(text, textRect)
             self.screen.blit(character_text, characterRect)
             start_button.draw_button()

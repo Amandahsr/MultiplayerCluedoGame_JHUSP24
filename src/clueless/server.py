@@ -19,7 +19,7 @@ except socket.error as e:
     print(str(e))
 
 # Listen for incoming connections
-s.listen(2)
+s.listen(6)
 print("Waiting for a connection, Server Started")
 
 # Define available characters and selected characters lists
@@ -78,13 +78,6 @@ def threaded_client(conn, player_id, game_controller: GameController):
                         selected_characters.append(character_name)
                         print(f"{character_name} has been selected.")
                         game_controller.initialize_player(character_name)
-                        # # Prepare a lobby update message with the selected characters
-                        # lobby_update = "lobby_update:" + ",".join(selected_characters)
-
-                        # # Send the lobby update message to all connected clients
-                        # for client in connections:
-                        #     client.send(str.encode(lobby_update))
-                        #     print("Lobby update sent to clients")  # Debug print
 
                 elif reply.startswith("start_game"):
                     print("Game start button pressed")

@@ -1,13 +1,10 @@
 from os import environ
-
-environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 # import pygame
 from player import Player
 from UI import chatDisplay
-
 # import server
 import random
-
+environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 
 """call order: 
 create a GameController object 
