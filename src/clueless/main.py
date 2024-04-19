@@ -220,7 +220,7 @@ class Client:
             player_card.draw(self.screen.subsurface(player_card_rect))
 
             # Render available moves button
-            if not options_showed:
+            if not options_showed and is_turn:
                 start_x = 900
                 start_y = 500
                 for move in valid_moves:
@@ -236,9 +236,22 @@ class Client:
                     button.draw_button()
 
             # Render available options button after a move is selected
-            else:
+            elif options_showed and is_turn:
                 for button in self.buttons_options:
                     button.draw_button()
+            
+            # If it isn't the player's turn, display a message to wait
+            else:
+                start_x = 800
+                start_y = 550
+                position = (start_x, start_y)
+                # Create a Pygame font object
+                font = pygame.font.Font(None, 45)
+                # Render the text
+                text = font.render("Wait Your Turn", 1, BLACK)
+                # Draw the text on the screen
+                self.screen.blit(text, position)
+                
 
             # Track mouse activity
             for event in pygame.event.get():
