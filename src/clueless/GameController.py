@@ -109,19 +109,20 @@ class GameController:
 
     # need input for user interface, should be run every time a player joins
     def initialize_player(self, character):  # need character from Server i think, order of players joining as well
-        if character == "Professor Plum":
-            p = Player("Professor Plum", "SL_Hall", True, 1)
-        if character == "Mrs. Peacock":
-            p = Player("Mrs. Peacock", "LC_Hall", True, 2)
-        if character == "Mr. Green":
-            p = Player("Mr. Green", "CB_Hall", True, 3)
-        if character == "Mrs. White":
-            p = Player("Mrs. White", "BK_Hall", True, 4)
-        if character == "Col. Mustard":
-            p = Player("Col. Mustard", "LD_Hall", True, 5)
         if character == "Miss Scarlet":
-            p = Player("Miss Scarlet", "HL_Hall", True, 6)
+            p = Player("Miss Scarlet", "HL_Hall", True, 1)
+        if character == "Col. Mustard":
+            p = Player("Col. Mustard", "LD_Hall", True, 2)
+        if character == "Mrs. White":
+            p = Player("Mrs. White", "BK_Hall", True, 3)
+        if character == "Mr. Green":
+            p = Player("Mr. Green", "CB_Hall", True, 4)
+        if character == "Mrs. Peacock":
+            p = Player("Mrs. Peacock", "LC_Hall", True, 5)
+        if character == "Professor Plum":
+            p = Player("Professor Plum", "SL_Hall", True, 6)
         self.players.append(p)  # adds players to game state
+        print(f"Initialized Players: {', '.join([player.character for player in self.players])}") #Debug statement
         return p
 
     # should be run after every player joins
