@@ -56,7 +56,7 @@ def threaded_client(conn, player_id, game_controller: GameController):
             print("Waiting for data from client")  # Debug print
             data = conn.recv(2048)
             reply = data.decode("utf-8")
-            print(f"Received data: {reply}")  # Debug print
+            print(f"Received: {reply}")  # Debug print
 
             if not data:
                 print("Disconnected")
@@ -128,7 +128,7 @@ def threaded_client(conn, player_id, game_controller: GameController):
 
                 else:
                     print("Received: ", reply)
-            print("REPLY: ", reply)
+
         except KeyError as e:
             print("Error handling data from client:", e)
             break

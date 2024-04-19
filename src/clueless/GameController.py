@@ -33,7 +33,7 @@ class GameController:
                 "Ballroom",
                 "Kitchen",
             ],
-            "weapon": ["candlestick", "wrench", "knife", "revolver", "rope", "lead pipe"],
+            "weapon": ["Candlestick", "Wrench", "Knife", "Revolver", "Rope", "Lead Pipe"],
         }
         self.available_cards = [
             "Professor Plum",
@@ -51,12 +51,12 @@ class GameController:
             "Conservatory",
             "Ballroom",
             "Kitchen",
-            "candlestick",
-            "wrench",
-            "knife",
-            "revolver",
-            "rope",
-            "lead pipe",
+            "Candlestick",
+            "Wrench",
+            "Knife",
+            "Revolver",
+            "Rope",
+            "Lead Pipe",
         ]
         self.players = players
         self.current_player = ""  # need to figure out how to initialize this for a variable number of players
