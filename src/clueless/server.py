@@ -96,6 +96,11 @@ def threaded_client(conn, player_id, game_controller: GameController):
                     valid_moves, options = game_controller.valid_moves()
                     conn.send(str.encode(f"{str(valid_moves)};{str(options)}"))
                     print("Valid moves returned.")
+                    print(f"Current turn: {game_controller.current_player}")
+
+                elif reply.startswith("get_current_turn"):
+                    conn.send(str(game_controller.current_player).encode())
+                    print("Current turn returned.")
 
                 elif reply.startswith("get_current_players"):
                     current_locations = {}

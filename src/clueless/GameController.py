@@ -59,7 +59,7 @@ class GameController:
             "Lead Pipe",
         ]
         self.players = players
-        self.current_player = ""  # need to figure out how to initialize this for a variable number of players
+        self.current_player = None  # need to figure out how to initialize this for a variable number of players
         self.board = {
             "Study": ["SL_Hall", "SH_Hall"],
             "Hall": ["SH_Hall", "HB_Hall", "HL_Hall"],

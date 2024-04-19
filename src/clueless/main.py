@@ -44,6 +44,11 @@ class Client:
     # def clear_server_msgs(self):
     #     while self.s.recv(1024):
     #         pass
+    
+    def check_turn(self):
+        self.s.send("get_current_turn".encode())
+        server_msg = self.s.recv(1024).decode("utf-8")
+        return server_msg == self.character
 
     def main_menu(self):
         print("Start of main_menu function")  # Debug print
@@ -194,6 +199,10 @@ class Client:
         # Keep track of game status and if a move button has been clicked
         running = True
         options_showed = False
+
+        # Check if this player has the current turn
+        is_turn = self.check_turn()
+        print(f"It is your turn: {is_turn}") 
 
         # Game loop
         while running:

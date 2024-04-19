@@ -1,5 +1,4 @@
 from os import environ
-
 environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 # import pygame
 
@@ -27,6 +26,10 @@ class Player:
         self.start = start
         self.moved = moved
 
+    # Allows character name to be printed from player object
+    def __str__(self):
+        return self.character
+    
     def get_location(self):
         return self.location
 
