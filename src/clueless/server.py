@@ -88,11 +88,16 @@ def threaded_client(conn, player_id, game_controller: GameController):
 
                 elif reply.startswith("start_game"):
                     print("Game start button pressed")
-                    game_controller.initialize_cards()
-                    game_controller.initialize_turns()
-                    # for client in connections:
-                    # client.send(str.encode("Game has started."))
-                    # print("Game start message sent to clients")  # Debug print
+                    if not game_controller.initialized:
+                        print("Initializing cards and turns")
+                        game_controller.initialize_cards()
+                        game_controller.initialize_turns()
+                        game_controller.initialized = True
+                    #for client in connections:
+                    #conn.send(str.encode("proceed_to_main_game"))
+                    #print(f"proceed_to_main_game sent to {conn}")
+                    else:
+                        pass
 
                 elif reply.startswith("valid_moves"):
                     valid_moves, options = game_controller.valid_moves()

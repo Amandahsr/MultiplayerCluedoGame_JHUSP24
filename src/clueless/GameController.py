@@ -92,6 +92,7 @@ class GameController:
         ]
         self.turn_order = []
 
+        self.initialized = False
         # Store message to return to chatDisplay
         self.chat_msg = ""
 
