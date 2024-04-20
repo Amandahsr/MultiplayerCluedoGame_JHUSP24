@@ -327,11 +327,15 @@ class Client:
                             locations = ast.literal_eval(server_msg)
                             #game_board.draw(self.screen.subsurface(game_board_rect), locations)
                             #game_board = GameBoard(self.gameUI, current_locations)
-                            print(f"Locations: {locations}")
-                            print(f"{button.command_function};{curr_move};{button.msg} sent to server")  # Debug print
+                            # print(f"Locations: {locations}")
+                            # print(f"{button.command_function};{curr_move};{button.msg} sent to server")  # Debug print
                             
+                            # Reset graphics after option clicked
                             self.buttons_options = []
                             options_showed = False
+                            
+                            # Call on next player
+                            self.s.send("valid_moves".encode())
 
                             
 

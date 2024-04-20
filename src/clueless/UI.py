@@ -158,13 +158,12 @@ class GameBoard:
             pass
 
     def draw(self, surface, locations: None):
-        print("Draw is executed")
         surface.blit(self.image, (0, 0))  # Blit the game board image
 
         # Calculate the center of the image
         center_x = self.image.get_width() // 2
         center_y = self.image.get_height() // 2
-        print(f"Center of the board is at ({center_x}, {center_y}")
+
         # Map each board spot to its corresponding coordinates
         board_spots = {
             "Study": (center_x - 210, center_y - 125),
@@ -195,10 +194,9 @@ class GameBoard:
             "MP_Start": (center_x - 250, center_y + 70),
             "PP_Start": (center_x - 250, center_y - 70),
         }
-        print("Board is initialized")
+
         # Iterate over all characters and their positions to draw them
         for character, position in self.positions.items():
-            print(f"Draw function for loop just started")
             # Get the board location for the character's position
             board_location = board_spots.get(position)
             icon = self.character_icons.get(character)
@@ -212,9 +210,8 @@ class GameBoard:
             else:
                 location = locations[character]
                 adjusted_location = board_spots[location]
-                print(location)
-                print(f"{adjusted_location}")
-            print(f"{character} is at {position}")
+                
+            # print(f"{character} is at {position}")
             # Draw the character icon at the pixel coordinates
             #icon.draw(surface, adjusted_location)
 

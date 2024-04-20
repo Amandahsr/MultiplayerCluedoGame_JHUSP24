@@ -122,6 +122,7 @@ def threaded_client(conn, player_id, game_controller: GameController):
                     print(f"Execute move: {reply}")
                     move = reply.split(";")[1]
                     option = reply.split(";")[2]
+                    print(f"Execute curr player: {game_controller.current_player}")
 
 
                     # game_board.update_position(message["character"], message["position"])
