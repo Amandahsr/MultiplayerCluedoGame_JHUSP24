@@ -139,7 +139,7 @@ class GameBoard:
         # self.load_icons()
 
         # Load the game board image
-        original_image = pygame.image.load("Gameboard.png")
+        original_image = pygame.image.load("src/clueless/Gameboard.png")
         # Set the image dimensions to fit the game board section of the display
         img_width = self.gameUI.screen_width // 2
         img_height = self.gameUI.screen_height // 2
