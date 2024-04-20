@@ -155,6 +155,7 @@ class Client:
         self.screen = pygame.display.set_mode((self.gameUI.screen_width, self.gameUI.screen_height), pygame.RESIZABLE)
         clock = pygame.time.Clock()
         chat_msg = None
+        curr_move = None
 
         # Initializing game board
         self.s.send("get_current_players".encode())
@@ -206,6 +207,8 @@ class Client:
 
         # Game loop
         while running:
+            self.buttons = []
+
             # Draw four sections
             pygame.draw.rect(self.screen, BLACK, game_board_rect)
             pygame.draw.rect(self.screen, BLACK, chat_display_rect)
@@ -252,8 +255,6 @@ class Client:
                 # Draw the text on the screen
                 self.screen.blit(text, position)
                 
-
-            # Track mouse activity
             for event in pygame.event.get():
                 # Quit event
                 if event.type == pygame.QUIT:
@@ -264,11 +265,11 @@ class Client:
 
                 # Button clicks
                 elif event.type == pygame.MOUSEBUTTONDOWN:
+                    print("Mouse click registered")
                     # Position of cursor
                     mouse_x, mouse_y = pygame.mouse.get_pos()
 
                     # Find button that matches cursor coordinates
-                    curr_move = None
                     for button in self.buttons:
                         if button.check_button(mouse_x, mouse_y):
                             # Move button is clicked
@@ -279,6 +280,7 @@ class Client:
 
                                 # Extract options based on move clicked
                                 if button.msg == "Move To Hallway":
+                                    print("Move to Hallway registered")
                                     available_options.append(options["Hallways"])
 
                                 elif button.msg == "Move To Room and Suggest":
@@ -306,10 +308,14 @@ class Client:
                                 self.s.send(f"{button.command_function};{button.msg}".encode())
                                 print(f"{button.command_function}{button.msg} selection sent to server")  # Debug print
 
+                    # Options button is clicked
                     for button in self.buttons_options:
                         if button.check_button(mouse_x, mouse_y):
                             self.s.send(f"{button.command_function};{curr_move};{button.msg}".encode())
                             print(f"{button.command_function};{curr_move};{button.msg} sent to server")  # Debug print
+                            
+                            self.buttons_options = []
+                            options_showed = False
 
                             # Receive game state change message
                             chat_msg = self.s.recv(1024).decode("utf-8")
