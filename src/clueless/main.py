@@ -46,10 +46,8 @@ class Client:
     #         pass
     
     def check_turn(self):
-        
         self.s.send("get_current_turn".encode())
         server_msg = self.s.recv(1024).decode("utf-8")
-        print("Server message: ", server_msg)
         return server_msg == self.character
 
     def main_menu(self):
@@ -204,10 +202,6 @@ class Client:
         options_showed = False
         locations = None
 
-        # Check if this player has the current turn
-        is_turn = self.check_turn()
-        print(f"It is your turn: {is_turn}") 
-
 
         # Game loop
         while running:
@@ -225,6 +219,8 @@ class Client:
             chat_display.display_chat_messages()
             player_options.draw(self.screen.subsurface(player_options_rect))
             player_card.draw(self.screen.subsurface(player_card_rect))
+
+            is_turn = self.check_turn()
 
             # Render available moves button
             if not options_showed and is_turn:
@@ -329,15 +325,11 @@ class Client:
                             locations = ast.literal_eval(server_msg)
                             #game_board.draw(self.screen.subsurface(game_board_rect), locations)
                             #game_board = GameBoard(self.gameUI, current_locations)
-                            # print(f"Locations: {locations}")
-                            # print(f"{button.command_function};{curr_move};{button.msg} sent to server")  # Debug print
+                            #print(f"Locations: {locations}")
+                            #print(f"{button.command_function};{curr_move};{button.msg} sent to server")  # Debug print
                             
-                            # Reset graphics after option clicked
                             self.buttons_options = []
                             options_showed = False
-                            
-                            # Call on next player
-                            self.s.send("valid_moves".encode())
 
                             
 
