@@ -161,6 +161,7 @@ class GameController:
         moves.append("Pass")  # every turn a player can pass
         moves.append("Accuse")  # every turn a player can accuse
 
+        print(f"self.current_player.start: {self.current_player.start}")
         # First turn logic
         if self.current_player.start == True:  # first move must be to adjacent hallway
             moves.append("Move To Hallway")

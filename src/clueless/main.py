@@ -180,12 +180,9 @@ class Client:
         print(f"Player cards: {available_cards}")
 
         # Obtain valid player moves/options from server
-        self.s.send("valid_moves".encode())
-        server_msg = self.s.recv(1024).decode("utf-8")
-        valid_moves = ast.literal_eval(server_msg.split(";")[0])
-        options = ast.literal_eval(server_msg.split(";")[1])
-        player_options = PlayerOptions(self.gameUI, valid_moves, self.screen)
-        print(f"Valid moves: {valid_moves}; Options: {options}")
+        
+        player_options = PlayerOptions(self.gameUI, [""], self.screen)
+
 
         # Initialize chat log display
         chat_display = chatDisplay(
@@ -221,6 +218,12 @@ class Client:
             player_card.draw(self.screen.subsurface(player_card_rect))
 
             is_turn = self.check_turn()
+
+            self.s.send("valid_moves".encode())
+            server_msg = self.s.recv(1024).decode("utf-8")
+            valid_moves = ast.literal_eval(server_msg.split(";")[0])
+            options = ast.literal_eval(server_msg.split(";")[1])
+            print(f"Valid moves: {valid_moves}; Options: {options}")
 
             # Render available moves button
             if not options_showed and is_turn:
