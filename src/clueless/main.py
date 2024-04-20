@@ -304,11 +304,12 @@ class Client:
                             # For start button
                             else:
                                 self.s.send(f"{button.command_function};{button.msg}".encode())
-
+                                print(f"{button.command_function}{button.msg} selection sent to server")  # Debug print
 
                     for button in self.buttons_options:
                         if button.check_button(mouse_x, mouse_y):
                             self.s.send(f"{button.command_function};{curr_move};{button.msg}".encode())
+                            print(f"{button.command_function};{curr_move};{button.msg} sent to server")  # Debug print
 
                             # Receive game state change message
                             chat_msg = self.s.recv(1024).decode("utf-8")

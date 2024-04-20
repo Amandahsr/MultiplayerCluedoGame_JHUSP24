@@ -164,7 +164,18 @@ class GameController:
         # First turn logic
         if self.current_player.start == True:  # first move must be to adjacent hallway
             moves.append("Move To Hallway")
-            options["Hallways"] = self.current_player.location  # player's location is initialized to starter hall
+            if self.current_player.character == "Miss Scarlet":
+                options["Hallways"] = "HL_Hall"
+            elif self.current_player.character == "Col. Mustard":
+                options["Hallways"] = "LD_Hall"
+            elif self.current_player.character == "Mrs. White":
+                options["Hallways"] = "BK_Hall"
+            elif self.current_player.character == "Mr. Green":
+                options["Hallways"] = "CB_Hall"
+            elif self.current_player.character == "Mrs. Peacock":
+                options["Hallways"] = "LC_Hall"
+            elif self.current_player.character == "Professor Plum":
+                options["Hallways"] = "SL_Hall"
             self.current_player.start == False  # it is not the current player's first move anymore, set to False
             return moves, options
 
@@ -355,7 +366,7 @@ class GameController:
         self.current_player = self.next_player(self.current_player)
 
         # calls valid moves to start next turn
-        self.valid_moves()
+        #self.valid_moves()
 
 
 """g = GameController()
