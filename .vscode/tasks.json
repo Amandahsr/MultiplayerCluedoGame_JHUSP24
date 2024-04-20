@@ -1,0 +1,63 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Server",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "${workspaceFolder}/src/clueless/server.py"
+            ],
+            "presentation": {
+                "group": "clueless"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Main 1",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "${workspaceFolder}/src/clueless/main.py"
+            ],
+            "presentation": {
+                "group": "clueless"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Main 2",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "${workspaceFolder}/src/clueless/main.py"
+            ],
+            "presentation": {
+                "group": "clueless"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Main 3",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "${workspaceFolder}/src/clueless/main.py"
+            ],
+            "presentation": {
+                "group": "clueless"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Launch Clueless",
+            "dependsOn": [
+                "Run Server",
+                "Run Main 1",
+                "Run Main 2",
+                "Run Main 3"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}
