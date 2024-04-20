@@ -88,7 +88,7 @@ class GameController:
             "BK_Hall",
         ]
         self.turn_order = []
-
+        self.start_pos = ["MS_Start", "CM_Start", "MW_Start", "MG_Start", "MP_Start", "PP_Start"]
         self.initialized = False
         # Store message to return to chatDisplay
         self.chat_msg = ""
@@ -163,7 +163,7 @@ class GameController:
 
         print(f"self.current_player.start: {self.current_player.start}")
         # First turn logic
-        if self.current_player.start == True:  # first move must be to adjacent hallway
+        if self.current_player.location in self.start_pos:  # first move must be to adjacent hallway
             moves.append("Move To Hallway")
             if self.current_player.character == "Miss Scarlet":
                 options["Hallways"] = "HL_Hall"
@@ -177,7 +177,7 @@ class GameController:
                 options["Hallways"] = "LC_Hall"
             elif self.current_player.character == "Professor Plum":
                 options["Hallways"] = "SL_Hall"
-            self.current_player.start == False  # it is not the current player's first move anymore, set to False
+            #self.current_player.start == False  # it is not the current player's first move anymore, set to False
             return moves, options
 
         # Move to Room from Hallway
