@@ -46,8 +46,10 @@ class Client:
     #         pass
     
     def check_turn(self):
+        
         self.s.send("get_current_turn".encode())
         server_msg = self.s.recv(1024).decode("utf-8")
+        print("Server message: ", server_msg)
         return server_msg == self.character
 
     def main_menu(self):
