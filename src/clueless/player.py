@@ -53,6 +53,7 @@ class Player:
 
     def set_location(self, x):
         self.location = x
+        print(f"Player {self.character} moved to {self.location}")
 
     def set_character(self, x):
         self.character = x

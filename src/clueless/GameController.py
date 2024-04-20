@@ -88,7 +88,7 @@ class GameController:
             "BK_Hall",
         ]
         self.turn_order = []
-
+        self.start_pos = ["MS_Start", "CM_Start", "MW_Start", "MG_Start", "MP_Start", "PP_Start"]
         self.initialized = False
         # Store message to return to chatDisplay
         self.chat_msg = ""
@@ -110,17 +110,17 @@ class GameController:
     # need input for user interface, should be run every time a player joins
     def initialize_player(self, character):  # need character from Server i think, order of players joining as well
         if character == "Miss Scarlet":
-            p = Player("Miss Scarlet", "HL_Hall", True, 1)
+            p = Player("Miss Scarlet", "MS_Start", True, 1)
         if character == "Col. Mustard":
-            p = Player("Col. Mustard", "LD_Hall", True, 2)
+            p = Player("Col. Mustard", "CM_Start", True, 2)
         if character == "Mrs. White":
-            p = Player("Mrs. White", "BK_Hall", True, 3)
+            p = Player("Mrs. White", "MW_Start", True, 3)
         if character == "Mr. Green":
-            p = Player("Mr. Green", "CB_Hall", True, 4)
+            p = Player("Mr. Green", "MG_Start", True, 4)
         if character == "Mrs. Peacock":
-            p = Player("Mrs. Peacock", "LC_Hall", True, 5)
+            p = Player("Mrs. Peacock", "MP_Start", True, 5)
         if character == "Professor Plum":
-            p = Player("Professor Plum", "SL_Hall", True, 6)
+            p = Player("Professor Plum", "PP_Start", True, 6)
         self.players.append(p)  # adds players to game state
         print(f"Initialized Players: {', '.join([player.character for player in self.players])}") #Debug statement
         return p
@@ -161,11 +161,23 @@ class GameController:
         moves.append("Pass")  # every turn a player can pass
         moves.append("Accuse")  # every turn a player can accuse
 
+        print(f"self.current_player.start: {self.current_player.start}")
         # First turn logic
-        if self.current_player.start == True:  # first move must be to adjacent hallway
+        if self.current_player.location in self.start_pos:  # first move must be to adjacent hallway
             moves.append("Move To Hallway")
-            options["Hallways"] = self.current_player.location  # player's location is initialized to starter hall
-            self.current_player.start == False  # it is not the current player's first move anymore, set to False
+            if self.current_player.character == "Miss Scarlet":
+                options["Hallways"] = ["HL_Hall"]
+            elif self.current_player.character == "Col. Mustard":
+                options["Hallways"] = ["LD_Hall"]
+            elif self.current_player.character == "Mrs. White":
+                options["Hallways"] = ["BK_Hall"]
+            elif self.current_player.character == "Mr. Green":
+                options["Hallways"] = ["CB_Hall"]
+            elif self.current_player.character == "Mrs. Peacock":
+                options["Hallways"] = ["LC_Hall"]
+            elif self.current_player.character == "Professor Plum":
+                options["Hallways"] = ["SL_Hall"]
+            #self.current_player.start == False  # it is not the current player's first move anymore, set to False
             return moves, options
 
         # Move to Room from Hallway
@@ -355,7 +367,7 @@ class GameController:
         self.current_player = self.next_player(self.current_player)
 
         # calls valid moves to start next turn
-        self.valid_moves()
+        #self.valid_moves()
 
 
 """g = GameController()

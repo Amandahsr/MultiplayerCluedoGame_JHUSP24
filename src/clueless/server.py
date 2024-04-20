@@ -34,7 +34,7 @@ connections = []
 def threaded_client(conn, player_id, game_controller: GameController):
     global connections
 
-    character_assignments = [
+    characters = [
         "Miss Scarlet",
         "Col. Mustard",
         "Mrs. White",
@@ -42,13 +42,10 @@ def threaded_client(conn, player_id, game_controller: GameController):
         "Mrs. Peacock",
         "Professor Plum",
     ]
-    character_name = character_assignments[player_id]
+    character_name = characters[player_id]
 
     # Send a connection message to the client
     conn.send(str.encode("Connected to server"))
-
-    # # Send the character name to the client
-    # conn.send(str.encode(character_name))
 
     while True:
         try:
@@ -122,10 +119,16 @@ def threaded_client(conn, player_id, game_controller: GameController):
                     print(f"Execute move: {reply}")
                     move = reply.split(";")[1]
                     option = reply.split(";")[2]
-                    option = json.dumps(option)
+                    print(f"Execute curr player: {game_controller.current_player}")
 
+
+                    # game_board.update_position(message["character"], message["position"])
+                    # send message to all clients to update game board
+                    print(f"move: {move}, option: {option}")
                     # Execute move
                     game_controller.execute_move(move, option)
+                    print("Move executed.")
+
 
                     # Send game state change message back
                     conn.send(str.encode(game_controller.chat_msg))

@@ -6,6 +6,7 @@ from os import environ
 from GameController import *
 import pygame
 import socket
+from debug import debug
 environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 
 # Set colors
@@ -52,7 +53,7 @@ class Client:
 
     def main_menu(self):
         print("Start of main_menu function")  # Debug print
-
+        
         # Display the main menu UI
         font = pygame.font.Font("freesansbold.ttf", 32)
         text = font.render("Welcome! Please select a character:", True, WHITE, BLACK)
@@ -155,13 +156,14 @@ class Client:
         self.screen = pygame.display.set_mode((self.gameUI.screen_width, self.gameUI.screen_height), pygame.RESIZABLE)
         clock = pygame.time.Clock()
         chat_msg = None
+        curr_move = None
 
         # Initializing game board
         self.s.send("get_current_players".encode())
         server_msg = self.s.recv(1024).decode("utf-8")
         print(f"Message received: {server_msg}")
-        current_locations = ast.literal_eval(server_msg)
-        game_board = GameBoard(self.gameUI, current_locations)
+        locations = ast.literal_eval(server_msg)
+        game_board = GameBoard(self.gameUI, locations)
 
         # Subsection screen into 4 parts
         half_width = self.gameUI.screen_width // 2
@@ -176,15 +178,7 @@ class Client:
         server_msg = self.s.recv(1024).decode("utf-8")
         available_cards = ast.literal_eval(server_msg)
         player_card = PlayerCard(self.gameUI, self.character, available_cards)
-        print(f"Player cards: {available_cards}")
-
-        # Obtain valid player moves/options from server
-        self.s.send("valid_moves".encode())
-        server_msg = self.s.recv(1024).decode("utf-8")
-        valid_moves = ast.literal_eval(server_msg.split(";")[0])
-        options = ast.literal_eval(server_msg.split(";")[1])
-        player_options = PlayerOptions(self.gameUI, valid_moves, self.screen)
-        print(f"Valid moves: {valid_moves}; Options: {options}")
+        player_options = PlayerOptions(self.gameUI, [""], self.screen)
 
         # Initialize chat log display
         chat_display = chatDisplay(
@@ -199,13 +193,13 @@ class Client:
         # Keep track of game status and if a move button has been clicked
         running = True
         options_showed = False
+        #locations = None
 
-        # Check if this player has the current turn
-        is_turn = self.check_turn()
-        print(f"It is your turn: {is_turn}") 
-
+      
         # Game loop
         while running:
+            self.buttons = []
+
             # Draw four sections
             pygame.draw.rect(self.screen, BLACK, game_board_rect)
             pygame.draw.rect(self.screen, BLACK, chat_display_rect)
@@ -214,10 +208,27 @@ class Client:
 
             # Draw game components into their respective sections
             self.screen.fill(BLACK)
-            game_board.draw(self.screen.subsurface(game_board_rect))
+            game_board.draw(self.screen.subsurface(game_board_rect), locations)
             chat_display.display_chat_messages()
             player_options.draw(self.screen.subsurface(player_options_rect))
             player_card.draw(self.screen.subsurface(player_card_rect))
+            
+            
+            is_turn = self.check_turn()
+
+            #debug(f"Locations: {locations}", 5, 650)
+
+            self.s.send("valid_moves".encode())
+            server_msg = self.s.recv(1024).decode("utf-8")
+            valid_moves = ast.literal_eval(server_msg.split(";")[0])
+            options = ast.literal_eval(server_msg.split(";")[1])
+            #print(f"Valid moves: {valid_moves}; Options: {options}")
+
+            self.s.send("get_current_players".encode())
+            server_msg = self.s.recv(1024).decode("utf-8")
+            locations = ast.literal_eval(server_msg)
+            game_board.draw(self.screen.subsurface(game_board_rect), locations)
+            game_board = GameBoard(self.gameUI, locations)
 
             # Render available moves button
             if not options_showed and is_turn:
@@ -252,8 +263,6 @@ class Client:
                 # Draw the text on the screen
                 self.screen.blit(text, position)
                 
-
-            # Track mouse activity
             for event in pygame.event.get():
                 # Quit event
                 if event.type == pygame.QUIT:
@@ -264,11 +273,11 @@ class Client:
 
                 # Button clicks
                 elif event.type == pygame.MOUSEBUTTONDOWN:
+                    print("Mouse click registered")
                     # Position of cursor
                     mouse_x, mouse_y = pygame.mouse.get_pos()
 
                     # Find button that matches cursor coordinates
-                    curr_move = None
                     for button in self.buttons:
                         if button.check_button(mouse_x, mouse_y):
                             # Move button is clicked
@@ -279,10 +288,14 @@ class Client:
 
                                 # Extract options based on move clicked
                                 if button.msg == "Move To Hallway":
-                                    available_options.append(options["Hallways"])
+                                    print("Move to Hallway registered")
+                                    available_options.extend(options["Hallways"])
+                                    #print(f"Available options: {available_options}")
 
                                 elif button.msg == "Move To Room and Suggest":
-                                    available_options.append(options["Rooms"])
+                                    available_options.extend(options["Rooms"])
+                                    print("Move to Room and Suggest registered")
+                                    #print(f"Available options: {available_options}")
 
                                 # Initialize available options buttons
                                 start_x = 900
@@ -304,26 +317,39 @@ class Client:
                             # For start button
                             else:
                                 self.s.send(f"{button.command_function};{button.msg}".encode())
+                                print(f"{button.command_function}{button.msg} selection sent to server")  # Debug print
 
-
+                    # Options button is clicked
                     for button in self.buttons_options:
                         if button.check_button(mouse_x, mouse_y):
                             self.s.send(f"{button.command_function};{curr_move};{button.msg}".encode())
-
                             # Receive game state change message
                             chat_msg = self.s.recv(1024).decode("utf-8")
-
+                            
                             # Update chat log display
                             if chat_msg:
-                                chat_display.add_chat_message(server_msg)
+                                chat_display.add_chat_message(chat_msg)
                                 chat_msg = None
+                            
+                            self.s.send("get_current_players".encode())
+                            server_msg = self.s.recv(1024).decode("utf-8")
+                            locations = ast.literal_eval(server_msg)
+                            game_board.draw(self.screen.subsurface(game_board_rect), locations)
+                            game_board = GameBoard(self.gameUI, locations)
+                            print(f"Locations: {locations}")
+                            #print(f"{button.command_function};{curr_move};{button.msg} sent to server")  # Debug print
+                            
+                            self.buttons_options = []
+                            options_showed = False
+
+                            
 
             if running:
                 pygame.display.update()
 
             # Refresh screen
-            pygame.display.flip()
-            clock.tick(150)  # Limit to 30 frames per second
+            #pygame.display.flip()
+            clock.tick(30)  # Limit to 30 frames per second
 
         pygame.quit()
 
