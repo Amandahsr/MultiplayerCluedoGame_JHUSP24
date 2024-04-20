@@ -34,7 +34,7 @@ connections = []
 def threaded_client(conn, player_id, game_controller: GameController):
     global connections
 
-    character_assignments = [
+    characters = [
         "Miss Scarlet",
         "Col. Mustard",
         "Mrs. White",
@@ -42,13 +42,10 @@ def threaded_client(conn, player_id, game_controller: GameController):
         "Mrs. Peacock",
         "Professor Plum",
     ]
-    character_name = character_assignments[player_id]
+    character_name = characters[player_id]
 
     # Send a connection message to the client
     conn.send(str.encode("Connected to server"))
-
-    # # Send the character name to the client
-    # conn.send(str.encode(character_name))
 
     while True:
         try:

@@ -6,6 +6,7 @@ from os import environ
 from GameController import *
 import pygame
 import socket
+from debug import debug
 environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 
 # Set colors
@@ -52,7 +53,7 @@ class Client:
 
     def main_menu(self):
         print("Start of main_menu function")  # Debug print
-
+        
         # Display the main menu UI
         font = pygame.font.Font("freesansbold.ttf", 32)
         text = font.render("Welcome! Please select a character:", True, WHITE, BLACK)
@@ -161,8 +162,8 @@ class Client:
         self.s.send("get_current_players".encode())
         server_msg = self.s.recv(1024).decode("utf-8")
         print(f"Message received: {server_msg}")
-        current_locations = ast.literal_eval(server_msg)
-        game_board = GameBoard(self.gameUI, current_locations)
+        locations = ast.literal_eval(server_msg)
+        game_board = GameBoard(self.gameUI, locations)
 
         # Subsection screen into 4 parts
         half_width = self.gameUI.screen_width // 2
@@ -177,12 +178,7 @@ class Client:
         server_msg = self.s.recv(1024).decode("utf-8")
         available_cards = ast.literal_eval(server_msg)
         player_card = PlayerCard(self.gameUI, self.character, available_cards)
-        print(f"Player cards: {available_cards}")
-
-        # Obtain valid player moves/options from server
-        
         player_options = PlayerOptions(self.gameUI, [""], self.screen)
-
 
         # Initialize chat log display
         chat_display = chatDisplay(
@@ -197,9 +193,9 @@ class Client:
         # Keep track of game status and if a move button has been clicked
         running = True
         options_showed = False
-        locations = None
+        #locations = None
 
-
+      
         # Game loop
         while running:
             self.buttons = []
@@ -216,14 +212,23 @@ class Client:
             chat_display.display_chat_messages()
             player_options.draw(self.screen.subsurface(player_options_rect))
             player_card.draw(self.screen.subsurface(player_card_rect))
-
+            
+            
             is_turn = self.check_turn()
+
+            #debug(f"Locations: {locations}", 5, 650)
 
             self.s.send("valid_moves".encode())
             server_msg = self.s.recv(1024).decode("utf-8")
             valid_moves = ast.literal_eval(server_msg.split(";")[0])
             options = ast.literal_eval(server_msg.split(";")[1])
-            print(f"Valid moves: {valid_moves}; Options: {options}")
+            #print(f"Valid moves: {valid_moves}; Options: {options}")
+
+            self.s.send("get_current_players".encode())
+            server_msg = self.s.recv(1024).decode("utf-8")
+            locations = ast.literal_eval(server_msg)
+            game_board.draw(self.screen.subsurface(game_board_rect), locations)
+            game_board = GameBoard(self.gameUI, locations)
 
             # Render available moves button
             if not options_showed and is_turn:
@@ -285,12 +290,12 @@ class Client:
                                 if button.msg == "Move To Hallway":
                                     print("Move to Hallway registered")
                                     available_options.extend(options["Hallways"])
-                                    print(f"Available options: {available_options}")
+                                    #print(f"Available options: {available_options}")
 
                                 elif button.msg == "Move To Room and Suggest":
                                     available_options.extend(options["Rooms"])
                                     print("Move to Room and Suggest registered")
-                                    print(f"Available options: {available_options}")
+                                    #print(f"Available options: {available_options}")
 
                                 # Initialize available options buttons
                                 start_x = 900
@@ -329,9 +334,9 @@ class Client:
                             self.s.send("get_current_players".encode())
                             server_msg = self.s.recv(1024).decode("utf-8")
                             locations = ast.literal_eval(server_msg)
-                            #game_board.draw(self.screen.subsurface(game_board_rect), locations)
-                            #game_board = GameBoard(self.gameUI, current_locations)
-                            #print(f"Locations: {locations}")
+                            game_board.draw(self.screen.subsurface(game_board_rect), locations)
+                            game_board = GameBoard(self.gameUI, locations)
+                            print(f"Locations: {locations}")
                             #print(f"{button.command_function};{curr_move};{button.msg} sent to server")  # Debug print
                             
                             self.buttons_options = []

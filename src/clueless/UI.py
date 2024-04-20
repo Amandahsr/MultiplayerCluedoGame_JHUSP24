@@ -39,7 +39,7 @@ class Button:
         return self.msg
 
     def prep_msg(self, msg):
-        print(f"msg: {msg}, text_color: {self.text_color}, button_color: {self.button_color}")
+        #print(f"msg: {msg}, text_color: {self.text_color}, button_color: {self.button_color}")
         self.msg_image = self.font.render(msg, True, self.text_color, self.button_color)
         self.msg_image_rect = self.msg_image.get_rect()
         self.msg_image_rect.center = self.rect.center
@@ -201,20 +201,15 @@ class GameBoard:
             # Get the board location for the character's position
             board_location = board_spots.get(position)
             icon = self.character_icons.get(character)
-            if not locations:
-                # Adjust the coordinates to make them the center of the icon
-                icon_width = icon.radius * 2
-                icon_height = icon.radius * 2
-                icon_x = board_location[0] - icon_width / 2
-                icon_y = board_location[1] - icon_height / 2
-                adjusted_location = (icon_x, icon_y)
-            else:
-                location = locations[character]
-                adjusted_location = board_spots[location]
-                
-            # print(f"{character} is at {position}")
+            icon_width = icon.radius * 2
+            icon_height = icon.radius * 2
+            icon_x = board_location[0] - icon_width / 2
+            icon_y = board_location[1] - icon_height / 2
+            adjusted_location = (icon_x, icon_y)
+
+            print(f"{character} is at {position}")
             # Draw the character icon at the pixel coordinates
-            #icon.draw(surface, adjusted_location)
+            icon.draw(surface, adjusted_location)
 
 
 
