@@ -298,7 +298,7 @@ class GameController:
     # "Take Secret Passageway and Suggest", "Move To Room and Suggest", "Move To Hallway", "Suggest", "Accuse", "Pass"
     # option is whatever the player also selected, for example if move room was selected, the option is the room they selected, use the naming convention in self.rooms
     # suggestion is also needed by the suggest() function
-    def execute_move(self, move, option, suggestion=None):
+    def execute_move(self, move, option, chat_database, suggestion=None):
         if move == "Take Secret Passageway and Suggest":  # game state updated
             self.current_player.set_location(option)
             self.current_player.set_in_room(True)
@@ -311,7 +311,8 @@ class GameController:
             weapon = suggestion["weapon"]
             suspect = suggestion["suspect"]
             room = suggestion["room"]
-            self.chat_msg = f"{characterName} takes secret passageway into {passageway_dest} and suggested [{weapon}, {suspect}, {room}]."
+            log_msg = f"{characterName} takes secret passageway into {passageway_dest} and suggested [{weapon}, {suspect}, {room}]."
+            chat_database.store_chat_message(characterName, move, log_msg)
 
         if move == "Move To Room and Suggest":
             self.current_player.set_location(option)
@@ -328,7 +329,8 @@ class GameController:
             weapon = suggestion["weapon"]
             suspect = suggestion["suspect"]
             room = suggestion["room"]
-            self.chat_msg = f"{characterName} moves into {passageway_dest} and suggested [{weapon}, {suspect}, {room}]."
+            log_msg = f"{characterName} moves into {passageway_dest} and suggested [{weapon}, {suspect}, {room}]."
+            chat_database.store_chat_message(characterName, move, log_msg)
 
         if move == "Move To Hallway":
             self.current_player.set_location(option)
@@ -338,7 +340,8 @@ class GameController:
             # Store and display msg
             characterName = self.current_player.character
             hallway = option
-            self.chat_msg = f"{characterName} moves into hallway {hallway}."
+            log_msg = f"{characterName} moves into hallway {hallway}."
+            chat_database.store_chat_message(characterName, move, log_msg)
 
         if move == "Suggest":
             self.current_player.set_moved(False)
@@ -354,14 +357,16 @@ class GameController:
             weapon = suggestion["weapon"]
             suspect = suggestion["suspect"]
             room = suggestion["room"]
-            self.chat_msg = f"{characterName} suggests [{weapon}, {suspect}, {room}]."
+            log_msg = f"{characterName} suggests [{weapon}, {suspect}, {room}]."
+            chat_database.store_chat_message(characterName, move, log_msg)
 
         if move == "Accuse":
             self.accuse()
 
             # Store and display msg
             characterName = self.current_player.character
-            self.chat_msg = f"{characterName} accuses."
+            log_msg = f"{characterName} accuses."
+            chat_database.store_chat_message(characterName, move, log_msg)
 
         # set next current player as the turn is complete, if "Pass" is chosen, current_player is reset as well
         self.current_player = self.next_player(self.current_player)

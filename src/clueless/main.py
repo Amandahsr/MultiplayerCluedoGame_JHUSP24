@@ -49,6 +49,7 @@ class Client:
     def check_turn(self):
         self.s.send("get_current_turn".encode())
         server_msg = self.s.recv(1024).decode("utf-8")
+
         return server_msg == self.character
 
     def main_menu(self):
@@ -155,7 +156,6 @@ class Client:
         # Initialize screen
         self.screen = pygame.display.set_mode((self.gameUI.screen_width, self.gameUI.screen_height), pygame.RESIZABLE)
         clock = pygame.time.Clock()
-        chat_msg = None
         curr_move = None
 
         # Initializing game board
@@ -180,24 +180,17 @@ class Client:
         player_card = PlayerCard(self.gameUI, self.character, available_cards)
         player_options = PlayerOptions(self.gameUI, [""], self.screen)
 
-        # Initialize chat log display
-        chat_display = chatDisplay(
-            self.screen,
-            chat_display_rect.x + chat_display_rect.width // 2,
-            chat_display_rect.y + chat_display_rect.height // 2,
-        )
-        chat_display.rect = chat_display_rect
-
         pygame.display.update()
 
         # Keep track of game status and if a move button has been clicked
         running = True
         options_showed = False
         #locations = None
-
       
         # Game loop
         while running:
+            # Check whether it is current player's turn
+            is_turn = self.check_turn()
             self.buttons = []
 
             # Draw four sections
@@ -206,29 +199,32 @@ class Client:
             pygame.draw.rect(self.screen, BLACK, player_card_rect)
             pygame.draw.rect(self.screen, BLACK, player_options_rect)
 
-            # Draw game components into their respective sections
+            # Draw player options and cards
             self.screen.fill(BLACK)
-            game_board.draw(self.screen.subsurface(game_board_rect), locations)
-            chat_display.display_chat_messages()
             player_options.draw(self.screen.subsurface(player_options_rect))
             player_card.draw(self.screen.subsurface(player_card_rect))
-            
-            
-            is_turn = self.check_turn()
 
-            #debug(f"Locations: {locations}", 5, 650)
+            # Get current players to draw gameboard
+            self.s.send("get_current_players".encode())
+            server_msg = self.s.recv(1024).decode("utf-8")
+            locations = ast.literal_eval(server_msg)
+            game_board = GameBoard(self.gameUI, locations)
+            game_board.draw(self.screen.subsurface(game_board_rect), locations)
 
+            # Get valid moves for current player
             self.s.send("valid_moves".encode())
             server_msg = self.s.recv(1024).decode("utf-8")
             valid_moves = ast.literal_eval(server_msg.split(";")[0])
             options = ast.literal_eval(server_msg.split(";")[1])
             #print(f"Valid moves: {valid_moves}; Options: {options}")
 
-            self.s.send("get_current_players".encode())
+            # Get recent log messages from chatDatabase and display in-game
+            self.s.send("get_game_logs".encode())
             server_msg = self.s.recv(1024).decode("utf-8")
-            locations = ast.literal_eval(server_msg)
-            game_board.draw(self.screen.subsurface(game_board_rect), locations)
-            game_board = GameBoard(self.gameUI, locations)
+            log_msgs = ast.literal_eval(server_msg)
+            chat_display = chatDisplay(chat_display_rect, self.screen, chat_display_rect.x + chat_display_rect.width // 2, chat_display_rect.y + chat_display_rect.height // 2, log_msgs)
+            chat_display.display_chat_messages()
+
 
             # Render available moves button
             if not options_showed and is_turn:
@@ -322,27 +318,19 @@ class Client:
                     # Options button is clicked
                     for button in self.buttons_options:
                         if button.check_button(mouse_x, mouse_y):
+                            # Execute option move
                             self.s.send(f"{button.command_function};{curr_move};{button.msg}".encode())
-                            # Receive game state change message
-                            chat_msg = self.s.recv(1024).decode("utf-8")
                             
-                            # Update chat log display
-                            if chat_msg:
-                                chat_display.add_chat_message(chat_msg)
-                                chat_msg = None
-                            
+                            # Obtain updated players locations
                             self.s.send("get_current_players".encode())
                             server_msg = self.s.recv(1024).decode("utf-8")
                             locations = ast.literal_eval(server_msg)
                             game_board.draw(self.screen.subsurface(game_board_rect), locations)
+
+                            # Reinitialize graphics for next player
                             game_board = GameBoard(self.gameUI, locations)
-                            print(f"Locations: {locations}")
-                            #print(f"{button.command_function};{curr_move};{button.msg} sent to server")  # Debug print
-                            
                             self.buttons_options = []
                             options_showed = False
-
-                            
 
             if running:
                 pygame.display.update()

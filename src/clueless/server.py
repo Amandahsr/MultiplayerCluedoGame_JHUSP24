@@ -2,6 +2,7 @@ import socket
 import json
 from _thread import start_new_thread
 from GameController import GameController
+from chatDatabase import chatDatabase
 import sys
 
 
@@ -30,7 +31,7 @@ try:
 
 
     # Function to handle each client connection
-    def threaded_client(conn, player_id, game_controller: GameController):
+    def threaded_client(conn, player_id, game_controller: GameController, chat_database: chatDatabase):
         global connections
 
         characters = [
@@ -62,7 +63,6 @@ try:
 
                 else:
                     if reply.startswith("select_character:"):
-                        # Extract the character name from the received message
                         character_name = reply.split(":")[1]
                         print(f"Character selected: {character_name}")  # Debug print
 
@@ -82,9 +82,7 @@ try:
                             game_controller.initialize_cards()
                             game_controller.initialize_turns()
                             game_controller.initialized = True
-                        #for client in connections:
-                        #conn.send(str.encode("proceed_to_main_game"))
-                        #print(f"proceed_to_main_game sent to {conn}")
+
                         else:
                             pass
 
@@ -95,7 +93,9 @@ try:
                         print(f"Current turn: {game_controller.current_player}")
 
                     elif reply.startswith("get_current_turn"):
+                        # Send current player back to client
                         conn.send(str(game_controller.current_player).encode())
+
                         print("Current turn returned.")
 
                     elif reply.startswith("get_current_players"):
@@ -104,34 +104,34 @@ try:
                             current_locations[player.character] = player.location
                         current_locations = json.dumps(current_locations)
                         conn.send(current_locations.encode())
+
                         print("Current locations of players returned.")
 
                     elif reply.startswith(f"get_player_cards: {character_name}"):
+                        print(f"get_player_cards is called")
                         player_cards = None
                         for player in game_controller.players:
                             if player.character == character_name:
+                                print(f"Character name: {character_name}")
                                 player_cards = player.cards
                         conn.send(str.encode(f"{player_cards}"))
-                        print("Current locations of players returned.")
+                        print("Player cards returned.")
 
                     elif reply.startswith(f"execute_move"):
-                        print(f"Execute move: {reply}")
                         move = reply.split(";")[1]
                         option = reply.split(";")[2]
-                        print(f"Execute curr player: {game_controller.current_player}")
+                        # print(f"Execute curr player: {game_controller.current_player}")
 
-
-                        # game_board.update_position(message["character"], message["position"])
                         # send message to all clients to update game board
-                        print(f"move: {move}, option: {option}")
+                        # print(f"move: {move}, option: {option}")
                         # Execute move
-                        game_controller.execute_move(move, option)
+                        game_controller.execute_move(move, option, chat_database)
                         print("Move executed.")
 
-
-                        # Send game state change message back
-                        conn.send(str.encode(game_controller.chat_msg))
-                        print("Current locations of players returned.")
+                    elif reply.startswith("get_game_logs"):
+                        messages = chat_database.get_chatDisplay_messages()
+                        conn.send(str.encode(f"{messages}"))
+                        print("Chat logs returned.")
 
                     else:
                         print("Received: ", reply)
@@ -148,10 +148,11 @@ try:
         print("Lost connection")
         # conn.close()
 
-
+    # Initialize global objects for use across all clients
     player_id = 0
     game_controller = GameController()
     game_controller.create_answer()
+    chat_database = chatDatabase()
 
     # Main server loop
     while True:
@@ -163,8 +164,12 @@ try:
         connections.append(conn)
 
         # Start a new thread to handle the client connection
-        start_new_thread(threaded_client, (conn, player_id, game_controller))
-        player_id += 1
+        start_new_thread(threaded_client, (conn, player_id, game_controller, chat_database))
+
+        if player_id == 5:
+            player_id = 0
+        else:
+            player_id += 1
 
 except socket.error as e:
     # Print error and close socket
