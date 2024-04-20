@@ -122,13 +122,15 @@ def threaded_client(conn, player_id, game_controller: GameController):
                     print(f"Execute move: {reply}")
                     move = reply.split(";")[1]
                     option = reply.split(";")[2]
-                    option = json.dumps(option)
+
 
                     # game_board.update_position(message["character"], message["position"])
                     # send message to all clients to update game board
-
+                    print(f"move: {move}, option: {option}")
                     # Execute move
                     game_controller.execute_move(move, option)
+                    print("Move executed.")
+
 
                     # Send game state change message back
                     conn.send(str.encode(game_controller.chat_msg))

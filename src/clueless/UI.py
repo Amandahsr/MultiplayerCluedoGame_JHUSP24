@@ -146,7 +146,7 @@ class GameBoard:
 
     def update_position(self, character, position):
         self.positions[character] = position
-        
+
 
     def display(self):
         for character, position in self.positions.items():
@@ -157,13 +157,14 @@ class GameBoard:
                 character_icon.draw(surface, spot_coordinates)
             pass
 
-    def draw(self, surface):
+    def draw(self, surface, locations: None):
+        print("Draw is executed")
         surface.blit(self.image, (0, 0))  # Blit the game board image
 
         # Calculate the center of the image
         center_x = self.image.get_width() // 2
         center_y = self.image.get_height() // 2
-
+        print(f"Center of the board is at ({center_x}, {center_y}")
         # Map each board spot to its corresponding coordinates
         board_spots = {
             "Study": (center_x - 210, center_y - 125),
@@ -194,22 +195,29 @@ class GameBoard:
             "MP_Start": (center_x - 250, center_y + 70),
             "PP_Start": (center_x - 250, center_y - 70),
         }
-
+        print("Board is initialized")
         # Iterate over all characters and their positions to draw them
         for character, position in self.positions.items():
+            print(f"Draw function for loop just started")
             # Get the board location for the character's position
             board_location = board_spots.get(position)
-            if board_location:
-                icon = self.character_icons.get(character)
-                if icon:
-                    # Adjust the coordinates to make them the center of the icon
-                    icon_width = icon.radius * 2
-                    icon_height = icon.radius * 2
-                    icon_x = board_location[0] - icon_width / 2
-                    icon_y = board_location[1] - icon_height / 2
-                    adjusted_location = (icon_x, icon_y)
-                    # Draw the character icon at the pixel coordinates
-                    icon.draw(surface, adjusted_location)
+            icon = self.character_icons.get(character)
+            if not locations:
+                # Adjust the coordinates to make them the center of the icon
+                icon_width = icon.radius * 2
+                icon_height = icon.radius * 2
+                icon_x = board_location[0] - icon_width / 2
+                icon_y = board_location[1] - icon_height / 2
+                adjusted_location = (icon_x, icon_y)
+            else:
+                location = locations[character]
+                adjusted_location = board_spots[location]
+                print(location)
+                print(f"{adjusted_location}")
+            print(f"{character} is at {position}")
+            # Draw the character icon at the pixel coordinates
+            #icon.draw(surface, adjusted_location)
+
 
 
 class CharacterIcon:
@@ -242,6 +250,7 @@ class CharacterIcon:
 
     def draw(self, surface, position):
         # Draw the icon on the screen at the given position
+        print(f"position passed to icon.draw: {position}")
         surface.blit(self.surface, position)
 
 
@@ -265,7 +274,7 @@ class chatDisplay:
         Adds game log message into chatDisplay storage.
         """
         # Remove initial chat display message once game logs are available
-        if "No log messages available" in self.messages:
+        if "No log messages available." in self.messages:
             self.messages.clear()
 
         self.messages.appendleft(message)
