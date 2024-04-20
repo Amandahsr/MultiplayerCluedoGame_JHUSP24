@@ -124,6 +124,9 @@ def threaded_client(conn, player_id, game_controller: GameController):
                     option = reply.split(";")[2]
                     option = json.dumps(option)
 
+                    # game_board.update_position(message["character"], message["position"])
+                    # send message to all clients to update game board
+
                     # Execute move
                     game_controller.execute_move(move, option)
 

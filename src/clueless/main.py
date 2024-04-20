@@ -313,6 +313,9 @@ class Client:
                             # Receive game state change message
                             chat_msg = self.s.recv(1024).decode("utf-8")
 
+                            # Update game board with new position after game state change
+                            game_board.draw(self.screen.subsurface(game_board_rect))
+
                             # Update chat log display
                             if chat_msg:
                                 chat_display.add_chat_message(server_msg)

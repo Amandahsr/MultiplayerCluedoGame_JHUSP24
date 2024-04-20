@@ -146,6 +146,7 @@ class GameBoard:
 
     def update_position(self, character, position):
         self.positions[character] = position
+        
 
     def display(self):
         for character, position in self.positions.items():
