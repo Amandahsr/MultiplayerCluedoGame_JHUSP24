@@ -166,17 +166,17 @@ class GameController:
         if self.current_player.location in self.start_pos:  # first move must be to adjacent hallway
             moves.append("Move To Hallway")
             if self.current_player.character == "Miss Scarlet":
-                options["Hallways"] = "HL_Hall"
+                options["Hallways"] = ["HL_Hall"]
             elif self.current_player.character == "Col. Mustard":
-                options["Hallways"] = "LD_Hall"
+                options["Hallways"] = ["LD_Hall"]
             elif self.current_player.character == "Mrs. White":
-                options["Hallways"] = "BK_Hall"
+                options["Hallways"] = ["BK_Hall"]
             elif self.current_player.character == "Mr. Green":
-                options["Hallways"] = "CB_Hall"
+                options["Hallways"] = ["CB_Hall"]
             elif self.current_player.character == "Mrs. Peacock":
-                options["Hallways"] = "LC_Hall"
+                options["Hallways"] = ["LC_Hall"]
             elif self.current_player.character == "Professor Plum":
-                options["Hallways"] = "SL_Hall"
+                options["Hallways"] = ["SL_Hall"]
             #self.current_player.start == False  # it is not the current player's first move anymore, set to False
             return moves, options
 

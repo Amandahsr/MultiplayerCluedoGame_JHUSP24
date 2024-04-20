@@ -39,6 +39,7 @@ class Button:
         return self.msg
 
     def prep_msg(self, msg):
+        print(f"msg: {msg}, text_color: {self.text_color}, button_color: {self.button_color}")
         self.msg_image = self.font.render(msg, True, self.text_color, self.button_color)
         self.msg_image_rect = self.msg_image.get_rect()
         self.msg_image_rect.center = self.rect.center

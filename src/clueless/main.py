@@ -284,10 +284,13 @@ class Client:
                                 # Extract options based on move clicked
                                 if button.msg == "Move To Hallway":
                                     print("Move to Hallway registered")
-                                    available_options.append(options["Hallways"])
+                                    available_options.extend(options["Hallways"])
+                                    print(f"Available options: {available_options}")
 
                                 elif button.msg == "Move To Room and Suggest":
-                                    available_options.append(options["Rooms"])
+                                    available_options.extend(options["Rooms"])
+                                    print("Move to Room and Suggest registered")
+                                    print(f"Available options: {available_options}")
 
                                 # Initialize available options buttons
                                 start_x = 900
