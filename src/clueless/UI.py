@@ -1,8 +1,7 @@
+import os
 from os import environ
-from collections import deque
-from typing import Dict
+from typing import Dict, List
 import pygame
-import sys
 environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 
 
@@ -139,7 +138,10 @@ class GameBoard:
         # self.load_icons()
 
         # Load the game board image
-        original_image = pygame.image.load("src/clueless/Gameboard.png")
+        ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+        gameboard_img_path = os.path.join(ROOT_DIR, 'Gameboard.png')
+        original_image = pygame.image.load(gameboard_img_path)
+        
         # Set the image dimensions to fit the game board section of the display
         img_width = self.gameUI.screen_width // 2
         img_height = self.gameUI.screen_height // 2
@@ -248,7 +250,7 @@ class CharacterIcon:
 
 
 class chatDisplay:
-    def __init__(self, screen, x, y):
+    def __init__(self, rect, screen, x, y, log_msgs: List[str]):
         self.screen = screen
         self.screen_rect = screen.get_rect()
         self.width, self.height = 250, 100
@@ -256,21 +258,9 @@ class chatDisplay:
         self.text_color = (0, 0, 0)
         self.header_font = pygame.font.Font("freesansbold.ttf", 28)
         self.log_font = pygame.font.Font("freesansbold.ttf", 15)
-        self.rect = pygame.Rect(0, 0, self.width, self.height)
+        self.rect = rect
         self.rect.center = (x, y)
-
-        # Maintain only maximum 5 messages
-        self.messages = deque(["No log messages available."], maxlen=5)
-
-    def add_chat_message(self, message: str):
-        """
-        Adds game log message into chatDisplay storage.
-        """
-        # Remove initial chat display message once game logs are available
-        if "No log messages available." in self.messages:
-            self.messages.clear()
-
-        self.messages.appendleft(message)
+        self.log_msgs = log_msgs
 
     def display_chat_messages(self):
         """
@@ -289,7 +279,7 @@ class chatDisplay:
         text_y = header_rect.bottom + 20
 
         # Render log messages
-        for _, msg in enumerate(self.messages):
+        for _, msg in enumerate(self.log_msgs):
             chat_surface = self.log_font.render(msg, True, self.text_color)
 
             # Calculate text coordinates

@@ -116,10 +116,22 @@ def test_get_specific_message_filter_flag_invalid():
     assert "not valid" in result
 
 
-def test_get_specific_message_no_matches():
-    # Add one test message to testdb
+def test_get_chatDisplay_messages():
+    # Add >5 test messages to testdb
     testdb = test_db()
+    test_message = {
+        "player_Name": "Bob",
+        "character_Name": "Peach",
+        "message_time": "test time",
+        "game_state_category": "accusation",
+        "message": "test message",
+    }
 
-    result = testdb.get_specific_message({"game_state_category": "accusation"})
+    for _ in range(0,8):
+        message = test_message.copy()
+        testdb.chatMessages.insert_one(message)
 
-    assert "No messages related" in result
+    result = testdb.get_chatDisplay_messages()
+
+    print(f"Messages: {result}")
+    assert len(result) == 5
