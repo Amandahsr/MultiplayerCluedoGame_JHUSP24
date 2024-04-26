@@ -3,7 +3,6 @@ import json
 from _thread import start_new_thread
 from GameController import GameController
 from chatDatabase import chatDatabase
-import sys
 
 
 # Set up server address and port

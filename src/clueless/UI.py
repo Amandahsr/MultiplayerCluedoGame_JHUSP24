@@ -1,8 +1,7 @@
+import os
 from os import environ
-from collections import deque
 from typing import Dict, List
 import pygame
-import sys
 environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 
 
@@ -139,7 +138,10 @@ class GameBoard:
         # self.load_icons()
 
         # Load the game board image
-        original_image = pygame.image.load("src/clueless/Gameboard.png")
+        ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+        gameboard_img_path = os.path.join(ROOT_DIR, 'Gameboard.png')
+        original_image = pygame.image.load(gameboard_img_path)
+        
         # Set the image dimensions to fit the game board section of the display
         img_width = self.gameUI.screen_width // 2
         img_height = self.gameUI.screen_height // 2
