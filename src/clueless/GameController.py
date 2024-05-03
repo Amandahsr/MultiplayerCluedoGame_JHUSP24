@@ -368,6 +368,12 @@ class GameController:
             log_msg = f"{characterName} accuses."
             chat_database.store_chat_message(characterName, move, log_msg)
 
+        if move == "Pass":
+            # Store and display msg
+            characterName = self.current_player.character
+            log_msg = f"{characterName} passed."
+            chat_database.store_chat_message(characterName, move, log_msg)
+
         # set next current player as the turn is complete, if "Pass" is chosen, current_player is reset as well
         self.current_player = self.next_player(self.current_player)
 
