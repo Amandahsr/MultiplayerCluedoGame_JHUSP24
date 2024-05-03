@@ -285,7 +285,7 @@ class chatDisplay:
             # Calculate text coordinates
             text_x = self.rect.x + 10
             self.screen.blit(chat_surface, (text_x, text_y))
-            text_y += 20
+            text_y += 50
 
 
 # class Text():

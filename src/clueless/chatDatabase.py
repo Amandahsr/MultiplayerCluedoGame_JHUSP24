@@ -3,10 +3,12 @@ MongoDB Atlas allows global connectivity, scalability, deployment and management
 Due to these reasons, it will be used for the chat system storage.
 """
 
+from time import strftime, localtime
 from pymongo import MongoClient, database, collection
 from pytz import timezone
 from datetime import datetime
 from typing import Dict, List
+from textwrap import wrap
 
 
 # class chatDatabase:
@@ -148,6 +150,24 @@ class chatDatabase():
     def __init__(self) -> None:
         self.log_msgs = []
 
+    def get_chatDisplay_messages(self) -> List[str]:
+        """
+        Returns most recent 5 messages stored in the database for in-game log display.
+        """
+        # Return most recent 5
+        log_msgs = [f"{msg['message_time']}: {msg['message']}" for msg in self.log_msgs][-5:]
+        
+        return log_msgs
+    
+    def get_recent_5_messages(self) -> List[str]:
+        """
+        Returns most recent 5 messages stored in the database for in-game log display.
+        """
+        # Return most recent 5
+        msgs = [msg['message'] for msg in self.log_msgs][-5:]
+
+        return msgs
+    
     def store_chat_message(
         self,
         character_Name: str,
@@ -157,29 +177,24 @@ class chatDatabase():
         """
         Stores a chat system message in the database.
         """
-        # EST timestamp
-        msg_timeZone = timezone("US/Eastern")
+        # Avoid storing duplicated log messages
+        if message in self.get_recent_5_messages():
+            pass
 
-        # message ID is based on the number of messages
-        msg_ID = len(self.log_msgs) + 1
+        else:
+            t = localtime()
 
-        # Message information that will be stored
-        message_info = {
-            "character_Name": character_Name,
-            "message_ID": msg_ID,
-            "message_time": datetime.now(msg_timeZone),
-            "game_state_category": game_state_category,
-            "message": message,
-        }
+            # message ID is based on the number of messages
+            msg_ID = len(self.log_msgs) + 1
 
-        # Store message information
-        self.log_msgs.append(message_info)
-        
-    def get_chatDisplay_messages(self) -> List[str]:
-        """
-        Returns most recent 5 messages stored in the database for in-game log display.
-        """
-        # Return most recent 5
-        log_msgs = [msg["message"] for msg in self.log_msgs][-5:]
+            # Message information that will be stored
+            message_info = {
+                "character_Name": character_Name,
+                "message_ID": msg_ID,
+                "message_time": strftime("%H:%M:%S", t),
+                "game_state_category": game_state_category,
+                "message": message,
+            }
 
-        return log_msgs
+            # Store message information
+            self.log_msgs.append(message_info)

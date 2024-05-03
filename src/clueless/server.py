@@ -84,6 +84,11 @@ try:
 
                         else:
                             pass
+                        
+                        # Add initial player turn msg
+                        current_player = game_controller.current_player
+                        message = f"It is {current_player}'s turn, please wait for a move to be executed..."
+                        chat_database.store_chat_message(current_player, "Player Turn", message)
 
                     elif reply.startswith("valid_moves"):
                         valid_moves, options = game_controller.valid_moves()
@@ -126,6 +131,11 @@ try:
                         # Execute move
                         game_controller.execute_move(move, option, chat_database)
                         print("Move executed.")
+
+                        # Add player turn msg
+                        current_player = game_controller.current_player
+                        message = f"It is {current_player}'s turn, please wait for a move to be executed..."
+                        chat_database.store_chat_message(current_player, "Player Turn", message)
 
                     elif reply.startswith("get_game_logs"):
                         messages = chat_database.get_chatDisplay_messages()
