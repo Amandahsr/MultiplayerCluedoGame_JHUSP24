@@ -286,12 +286,26 @@ class Client:
                                 if button.msg == "Move To Hallway":
                                     print("Move to Hallway registered")
                                     available_options.extend(options["Hallways"])
-                                    #print(f"Available options: {available_options}")
 
                                 elif button.msg == "Move To Room and Suggest":
                                     available_options.extend(options["Rooms"])
                                     print("Move to Room and Suggest registered")
-                                    #print(f"Available options: {available_options}")
+
+                                elif button.msg == "Pass":
+                                    # Execute option move
+                                    self.s.send("execute_move;Pass; ".encode())
+                                    print("Pass registered")
+
+                                    # Obtain updated players locations
+                                    self.s.send("get_current_players".encode())
+                                    server_msg = self.s.recv(1024).decode("utf-8")
+                                    locations = ast.literal_eval(server_msg)
+                                    game_board.draw(self.screen.subsurface(game_board_rect), locations)
+
+                                    # Reinitialize graphics for next player
+                                    game_board = GameBoard(self.gameUI, locations)
+                                    self.buttons_options = []
+                                    options_showed = False
 
                                 # Initialize available options buttons
                                 start_x = 900
