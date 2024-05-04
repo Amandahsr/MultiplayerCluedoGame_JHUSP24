@@ -61,31 +61,31 @@ class GameController:
         self.players = players
         self.current_player = None  # need to figure out how to initialize this for a variable number of players
         self.board = {
-            "Study": ["SL_Hall", "SH_Hall"],
-            "Hall": ["SH_Hall", "HB_Hall", "HL_Hall"],
-            "Lounge": ["HL_Hall", "LD_Hall"],
-            "Library": ["SL_Hall", "LB_Hall", "LC_Hall"],
-            "Billiard": ["HB_Hall", "LB_Hall", "BB_Hall", "BD_Hall"],
-            "Dining": ["LD_Hall", "BD_Hall", "DK_Hall"],
-            "Conservatory": ["LC_Hall", "CB_Hall"],
-            "Ballroom": ["CB_Hall", "BB_Hall", "BK_Hall"],
-            "Kitchen": ["BK_Hall", "DK_Hall"],
+            "Study": ["Study-Library Hallway", "Study-Hall Hallway"],
+            "Hall": ["Study-Hall Hallway", "Hall-Billiard Hallway", "Hall-Lounge Hallway"],
+            "Lounge": ["Hall-Lounge Hallway", "Lounge-Dining Hallway"],
+            "Library": ["Study-Library Hallway", "Library-Billiard Hallway", "Library-Conservatory Hallway"],
+            "Billiard": ["Hall-Billiard Hallway", "Library-Billiard Hallway", "Billiard-Ballroom Hallway", "Billiard-Dining Hallway"],
+            "Dining": ["Lounge-Dining Hallway", "Billiard-Dining Hallway", "Dining-Kitchen Hallway"],
+            "Conservatory": ["Library-Conservatory Hallway", "Conservatory-Ballroom Hallway"],
+            "Ballroom": ["Conservatory-Ballroom Hallway", "Billiard-Ballroom Hallway", "Ballroom-Kitchen Hallway"],
+            "Kitchen": ["Ballroom-Kitchen Hallway", "Dining-Kitchen Hallway"],
         }
         self.rooms = ["Study", "Hall", "Lounge", "Library", "Billiard", "Dining", "Conversatory", "Ballroom", "Kitchen"]
         self.corner_rooms = ["Study", "Conservatory", "Lounge", "Kitchen"]
         self.hallways = [
-            "SL_Hall",
-            "SH_Hall",
-            "HL_Hall",
-            "HB_Hall",
-            "LD_Hall",
-            "LB_Hall",
-            "BD_Hall",
-            "LC_Hall",
-            "BB_Hall",
-            "DK_Hall",
-            "CB_Hall",
-            "BK_Hall",
+            "Study-Library Hallway",
+            "Study-Hall Hallway",
+            "Hall-Lounge Hallway",
+            "Hall-Billiard Hallway",
+            "Lounge-Dining Hallway",
+            "Library-Billiard Hallway",
+            "Billiard-Dining Hallway",
+            "Library-Conservatory Hallway",
+            "Billiard-Ballroom Hallway",
+            "Dining-Kitchen Hallway",
+            "Conservatory-Ballroom Hallway",
+            "Ballroom-Kitchen Hallway",
         ]
         self.turn_order = []
         self.start_pos = ["MS_Start", "CM_Start", "MW_Start", "MG_Start", "MP_Start", "PP_Start"]
@@ -170,46 +170,46 @@ class GameController:
         if self.current_player.location in self.start_pos:  # first move must be to adjacent hallway
             moves.append("Move To Hallway")
             if self.current_player.character == "Miss Scarlet":
-                options["Hallways"] = ["HL_Hall"]
+                options["Hallways"] = ["Hall-Lounge Hallway"]
             elif self.current_player.character == "Col. Mustard":
-                options["Hallways"] = ["LD_Hall"]
+                options["Hallways"] = ["Lounge-Dining Hallway"]
             elif self.current_player.character == "Mrs. White":
-                options["Hallways"] = ["BK_Hall"]
+                options["Hallways"] = ["Ballroom-Kitchen Hallway"]
             elif self.current_player.character == "Mr. Green":
-                options["Hallways"] = ["CB_Hall"]
+                options["Hallways"] = ["Conservatory-Ballroom Hallway"]
             elif self.current_player.character == "Mrs. Peacock":
-                options["Hallways"] = ["LC_Hall"]
+                options["Hallways"] = ["Library-Conservatory Hallway"]
             elif self.current_player.character == "Professor Plum":
-                options["Hallways"] = ["SL_Hall"]
+                options["Hallways"] = ["Study-Library Hallway"]
             #self.current_player.start == False  # it is not the current player's first move anymore, set to False
             return moves, options
 
         # Move to Room from Hallway
         if self.current_player.location in self.hallways:
             moves.append("Move To Room and Suggest")
-            if self.current_player.location == "SL_Hall":  # creating the rooms the player can move into
+            if self.current_player.location == "Study-Library Hallway":  # creating the rooms the player can move into
                 options["Rooms"] = ["Study", "Library"]
-            elif self.current_player.location == "SH_Hall":
+            elif self.current_player.location == "Study-Hall Hallway":
                 options["Rooms"] = ["Study", "Hall"]
-            elif self.current_player.location == "HL_Hall":
+            elif self.current_player.location == "Hall-Lounge Hallway":
                 options["Rooms"] = ["Hall", "Lounge"]
-            elif self.current_player.location == "HB_Hall":
+            elif self.current_player.location == "Hall-Billiard Hallway":
                 options["Rooms"] = ["Hall", "Billiard"]
-            elif self.current_player.location == "LD_Hall":
+            elif self.current_player.location == "Lounge-Dining Hallway":
                 options["Rooms"] = ["Library", "Dining"]
-            elif self.current_player.location == "LB_Hall":
+            elif self.current_player.location == "Library-Billiard Hallway":
                 options["Rooms"] = ["Library", "Billiard"]
-            elif self.current_player.location == "BD_Hall":
+            elif self.current_player.location == "Billiard-Dining Hallway":
                 options["Rooms"] = ["Billiard", "Dining"]
-            elif self.current_player.location == "LC_Hall":
+            elif self.current_player.location == "Library-Conservatory Hallway":
                 options["Rooms"] = ["Library", "Conservatory"]
-            elif self.current_player.location == "BB_Hall":
+            elif self.current_player.location == "Billiard-Ballroom Hallway":
                 options["Rooms"] = ["Billiard", "Ballroom"]
-            elif self.current_player.location == "DK_Hall":
+            elif self.current_player.location == "Dining-Kitchen Hallway":
                 options["Rooms"] = ["Dining", "Kitchen"]
-            elif self.current_player.location == "CB_Hall":
+            elif self.current_player.location == "Conservatory-Ballroom Hallway":
                 options["Rooms"] = ["Conservatory", "Ballroom"]
-            elif self.current_player.location == "BK_Hall":
+            elif self.current_player.location == "Ballroom-Kitchen Hallway":
                 options["Rooms"] = ["Ballroom", "Kitchen"]
             return moves, options
 
@@ -403,5 +403,5 @@ g.current_player.start = False
 g.current_player.moved = True
 print(g.valid_moves())
 print(g.current_player.character)
-g.execute_move("Move To Hallway", "SL_Hall")
+g.execute_move("Move To Hallway", "Study-Library Hallway")
 print(g.current_player.character)"""
