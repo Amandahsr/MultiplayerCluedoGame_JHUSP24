@@ -210,7 +210,7 @@ class GameController:
             return moves, options
 
         # Move to hallway from room, take secret passageway, and stay in room (if moved) and suggest
-        if self.current_player.in_room == True:
+        if self.current_player.location in self.rooms:
             num = 0
             adj_halls = self.board.get(self.current_player.location)  # adjacent hallways
             print(adj_halls)
@@ -273,8 +273,8 @@ class GameController:
                 break
             next = self.next_player(next)  # moves to the next player
             num += 1
-        print(next.character)
-        print(disapproval)
+        # print(next.character)
+        # print(disapproval)
 
         return next, disapproval  # returns player who disapproved and cards to disapprove, needs to go to another class
 
@@ -286,15 +286,16 @@ class GameController:
             if i.character == suggestion.get("suspect"):
                 i.set_location(suggestion.get("room"))
                 i.set_moved(True)
+                i.set_in_room(True)
                 break
         self.disapprove_suggestion(suggestion)
 
     # handles the accusation logic after a player selected their move, called during execute_move, returns true/false if accusation is correct
     def accuse(self, accusation):
-        if accusation.get('suspect') == self.answer.get('suspect'):
-            if accusation.get('weapon') == self.answer.get('weapon'):
-                if accusation.get('room') == self.answer.get('room'):
-                    return True  
+        if accusation.get("suspect") == self.answer.get("suspect"):
+            if accusation.get("weapon") == self.answer.get("weapon"):
+                if accusation.get("room") == self.answer.get("room"):
+                    return True
         else:
             return False
 
@@ -375,7 +376,7 @@ class GameController:
         if move == "Accuse":
             characterName = self.current_player.character
             self.chat_msg = f"{characterName} accuses."
-            correct = self.accuse(suggestion) #if accusation is correct
+            correct = self.accuse(suggestion)  # if accusation is correct
             if correct:
                 self.chat_msg = f"{characterName} wins!"
             else:
