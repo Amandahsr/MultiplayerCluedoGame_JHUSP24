@@ -324,7 +324,8 @@ class GameController:
                 self.current_player.set_location(option)
                 self.current_player.set_in_room(True)
                 self.current_player.set_in_corner_room(True)
-                self.suggest(suggestion)
+                temp, d_lst = self.suggest(suggestion)
+                self.disapproval(True)
 
                 # Store and display msg
                 passageway_dest = option
@@ -342,7 +343,9 @@ class GameController:
                     self.current_player.set_in_corner_room(True)
                 else:
                     self.current_player.set_in_corner_room(False)
-                self.suggest(suggestion)
+                temp, d_lst = self.suggest(suggestion)
+                self.disapproval(True)
+
 
                 # Store and display msg
                 passageway_dest = option
@@ -371,7 +374,8 @@ class GameController:
                     self.current_player.set_in_corner_room(True)
                 else:
                     self.current_player.set_in_corner_room(False)
-                self.suggest(suggestion)
+                temp, d_lst = self.suggest(suggestion)
+                self.disapproval(True)
 
                 # Store and display msg
                 characterName = self.current_player.character
