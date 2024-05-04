@@ -90,6 +90,10 @@ class GameController:
         self.turn_order = []
         self.start_pos = ["MS_Start", "CM_Start", "MW_Start", "MG_Start", "MP_Start", "PP_Start"]
         self.initialized = False
+        self.game_over = False
+        self.winner = None
+        self.win = False
+        self.tie = False
         # Store message to return to chatDisplay
         self.chat_msg = ""
 
@@ -291,7 +295,8 @@ class GameController:
     # handles the accusation logic after a player selected their move, called during execute_move
     def accuse(self):
         # needs to be implemented
-        return None
+        # Returning true for test purposes
+        return True
 
     # execute move needs the selected move and the option (i.e., which room, hallway, passageway player selected)
     # moves are strings, 6 options shown below:

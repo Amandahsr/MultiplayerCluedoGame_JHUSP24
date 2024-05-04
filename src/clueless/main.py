@@ -41,6 +41,8 @@ class Client:
             sys.exit(0)
 
         self.main_menu()
+        #self.end_game_tie()
+        #self.end_game_win("Miss Scarlet")
 
     # def clear_server_msgs(self):
     #     while self.s.recv(1024):
@@ -97,6 +99,7 @@ class Client:
                             character = button.msg
                             running = False
                             self.lobby(character)
+                            
 
             if running:
                 pygame.display.update()
@@ -204,6 +207,16 @@ class Client:
             player_options.draw(self.screen.subsurface(player_options_rect))
             player_card.draw(self.screen.subsurface(player_card_rect))
 
+            # Check if game is over
+            self.s.send("check_game_over".encode())
+            server_msg = self.s.recv(1024).decode("utf-8")
+            print(f"Server message: {server_msg}")
+            if server_msg.split(":")[0] == "winner":
+                winner = server_msg.split(":")[1]
+                self.end_game_win(winner)
+            elif server_msg == "tie":
+                self.end_game_tie()
+
             # Get current players to draw gameboard
             self.s.send("get_current_players".encode())
             server_msg = self.s.recv(1024).decode("utf-8")
@@ -306,6 +319,17 @@ class Client:
                                     game_board = GameBoard(self.gameUI, locations)
                                     self.buttons_options = []
                                     options_showed = False
+                                
+                                elif button.msg == "Accuse":
+                                    print("Pressed Accuse button")
+                                    self.s.send("accuse".encode())
+                                    server_msg = self.s.recv(1024).decode("utf-8")
+                                    print(f"Server message: {server_msg}")
+                                    if server_msg.split(":")[0] == "winner":
+                                        winner = server_msg.split(":")[1]
+                                        self.end_game_win(winner)
+                                    else:
+                                        pass
 
                                 # Initialize available options buttons
                                 start_x = 900
@@ -354,6 +378,66 @@ class Client:
             clock.tick(30)  # Limit to 30 frames per second
 
         pygame.quit()
+
+    def end_game_win(self, winner_name):
+        print("End Game Win Scene Started")
+        
+        # Display the end game scene
+        font = pygame.font.Font("freesansbold.ttf", 32)
+        text = font.render("We Have a Winner!", True, WHITE, BLACK)
+        textRect = text.get_rect()
+        textRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 4)
+        character_text = font.render(f"Congratulations {winner_name}", True, WHITE, BLACK)
+        characterRect = character_text.get_rect()
+        characterRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 2)
+        gameover_text = font.render("Game Over", True, WHITE, BLACK)
+        gameoverRect = gameover_text.get_rect()
+        gameoverRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 1.3)
+
+        running = True
+        while running:
+            self.screen.fill(BLACK)
+            self.screen.blit(text, textRect)
+            self.screen.blit(character_text, characterRect)
+            self.screen.blit(gameover_text, gameoverRect)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    print("Quit event detected")  # Debug print
+                    running = False
+                    pygame.quit()
+                    sys.exit(0)
+
+            if running:
+                pygame.display.update()
+
+    def end_game_tie(self):
+        print("End Game Tie Scene Started")
+        
+        # Display the end game scene
+        font = pygame.font.Font("freesansbold.ttf", 32)
+        text = font.render("This Game Has No Winner", True, WHITE, BLACK)
+        textRect = text.get_rect()
+        textRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 4)
+        character_text = font.render(f"Game Over", True, WHITE, BLACK)
+        characterRect = character_text.get_rect()
+        characterRect.center = (self.gameUI.screen_width // 2, self.gameUI.screen_height // 2)
+
+        running = True
+        while running:
+            self.screen.fill(BLACK)
+            self.screen.blit(text, textRect)
+            self.screen.blit(character_text, characterRect)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    print("Quit event detected")  # Debug print
+                    running = False
+                    pygame.quit()
+                    sys.exit(0)
+
+            if running:
+                pygame.display.update()
 
 
 if __name__ == "__main__":

@@ -46,6 +46,7 @@ try:
         # Send a connection message to the client
         conn.send(str.encode("Connected to server"))
 
+
         while True:
             try:
                 # Receive data from the client
@@ -108,7 +109,6 @@ try:
                             current_locations[player.character] = player.location
                         current_locations = json.dumps(current_locations)
                         conn.send(current_locations.encode())
-
                         print("Current locations of players returned.")
 
                     elif reply.startswith(f"get_player_cards: {character_name}"):
@@ -142,6 +142,25 @@ try:
                         conn.send(str.encode(f"{messages}"))
                         print("Chat logs returned.")
 
+                    elif reply.startswith("accuse"):
+                        print("Received accuse message from client")
+                        print(f"Correct accuse answer is {answer}")
+                        
+                        if game_controller.accuse() == True:
+                            game_controller.winner = game_controller.current_player
+                            game_controller.game_over = True
+                            game_controller.win = True
+                            conn.send(str.encode(f"winner:{game_controller.winner}"))
+                    
+                    elif reply.startswith("check_game_over"):
+                        print(f"Current flags: game_over: {game_controller.game_over}, win: {game_controller.win}, tie: {game_controller.tie}")
+                        if game_controller.game_over and game_controller.win:
+                            conn.send(str.encode(f"winner:{game_controller.winner}"))
+                        elif game_controller.game_over and game_controller.tie:
+                            conn.send(str.encode("tie"))
+                        else:
+                            conn.send(str.encode("continue"))
+
                     else:
                         print("Received: ", reply)
 
@@ -160,7 +179,7 @@ try:
     # Initialize global objects for use across all clients
     player_id = 0
     game_controller = GameController()
-    game_controller.create_answer()
+    answer = game_controller.create_answer()
     chat_database = chatDatabase()
 
     # Main server loop
