@@ -161,7 +161,7 @@ try:
                             conn.send(str.encode(f"winner:{game_controller.winner}"))
                     
                     elif reply.startswith("check_game_over"):
-                        print(f"Current flags: game_over: {game_controller.game_over}, win: {game_controller.win}, tie: {game_controller.tie}")
+                        #print(f"Current flags: game_over: {game_controller.game_over}, win: {game_controller.win}, tie: {game_controller.tie}")
                         if game_controller.game_over and game_controller.win:
                             conn.send(str.encode(f"winner:{game_controller.winner}"))
                         elif game_controller.game_over and game_controller.tie:

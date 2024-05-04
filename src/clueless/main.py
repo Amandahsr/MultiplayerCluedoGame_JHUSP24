@@ -81,7 +81,7 @@ class Client:
             self.s.send("get_available_characters".encode())
             server_msg = self.s.recv(1024).decode("utf-8")
             avail_characters = json.loads(server_msg)
-            print(f"Available characters: {avail_characters}")
+            #print(f"Available characters: {avail_characters}")
 
             if "Miss Scarlet" in avail_characters:
                 char_buttons[0].draw_button()
