@@ -1,9 +1,10 @@
 from os import environ
-# import pygame
-from player import Player
-from UI import chatDisplay
-# import server
+
 import random
+from typing import Dict
+
+from player import Player
+
 environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 
 """call order: 
@@ -122,7 +123,7 @@ class GameController:
         if character == "Professor Plum":
             p = Player("Professor Plum", "PP_Start", True, 6)
         self.players.append(p)  # adds players to game state
-        print(f"Initialized Players: {', '.join([player.character for player in self.players])}") #Debug statement
+        print(f"Initialized Players: {', '.join([player.character for player in self.players])}")  # Debug statement
         return p
 
     # should be run after every player joins
@@ -161,7 +162,6 @@ class GameController:
         moves.append("Pass")  # every turn a player can pass
         moves.append("Accuse")  # every turn a player can accuse
 
-        print(f"self.current_player.start: {self.current_player.start}")
         # First turn logic
         if self.current_player.location in self.start_pos:  # first move must be to adjacent hallway
             moves.append("Move To Hallway")
@@ -177,7 +177,7 @@ class GameController:
                 options["Hallways"] = ["LC_Hall"]
             elif self.current_player.character == "Professor Plum":
                 options["Hallways"] = ["SL_Hall"]
-            #self.current_player.start == False  # it is not the current player's first move anymore, set to False
+            # self.current_player.start == False  # it is not the current player's first move anymore, set to False
             return moves, options
 
         # Move to Room from Hallway
@@ -279,8 +279,9 @@ class GameController:
         return next, disapproval  # returns player who disapproved and cards to disapprove, needs to go to another class
 
     # handles the suggestion logic after a player selected their move, called during execute_move
-    # suggestion is assumed to be in a dict specified above
+    # suggestion is assumed to be in a dict specified above: {suspect:option_clicked, weapon:option_clicked, room:char_current_room}
     def suggest(self, suggestion):  # need the suggestion from player selection, suggestion is assumed to be a dict
+        print("Suggest is executed.")
         for i in self.players:
             if i.character == suggestion.get("suspect"):
                 i.set_location(suggestion.get("room"))
@@ -298,7 +299,7 @@ class GameController:
     # "Take Secret Passageway and Suggest", "Move To Room and Suggest", "Move To Hallway", "Suggest", "Accuse", "Pass"
     # option is whatever the player also selected, for example if move room was selected, the option is the room they selected, use the naming convention in self.rooms
     # suggestion is also needed by the suggest() function
-    def execute_move(self, move, option, chat_database, suggestion=None):
+    def execute_move(self, move: str, option: str, chat_database, suggestion: Dict = None):
         if move == "Take Secret Passageway and Suggest":  # game state updated
             self.current_player.set_location(option)
             self.current_player.set_in_room(True)
@@ -378,7 +379,7 @@ class GameController:
         self.current_player = self.next_player(self.current_player)
 
         # calls valid moves to start next turn
-        #self.valid_moves()
+        # self.valid_moves()
 
 
 """g = GameController()

@@ -28,7 +28,6 @@ try:
     # List to store client connections
     connections = []
 
-
     # Function to handle each client connection
     def threaded_client(conn, player_id, game_controller: GameController, chat_database: chatDatabase):
         global connections
@@ -49,10 +48,13 @@ try:
         while True:
             try:
                 # Receive data from the client
-                print("Waiting for data from client")  # Debug print
+                # print("Waiting for data from client")  # Debug print
                 data = conn.recv(2048)
                 reply = data.decode("utf-8")
-                print(f"Received: {reply}")  # Debug print
+
+                # Avoid spamming server with these messages
+                if not reply in ["get_current_turn", "get_game_logs", "get_current_players", "valid_moves"]:
+                    print(f"Received: {reply}")  # Debug print
 
                 if not data:
                     print("Disconnected")
@@ -82,9 +84,6 @@ try:
                             game_controller.initialize_turns()
                             game_controller.initialized = True
 
-                        else:
-                            pass
-                        
                         # Add initial player turn msg
                         current_player = game_controller.current_player
                         message = f"It is {current_player}'s turn, please wait for a move to be executed..."
@@ -93,14 +92,14 @@ try:
                     elif reply.startswith("valid_moves"):
                         valid_moves, options = game_controller.valid_moves()
                         conn.send(str.encode(f"{str(valid_moves)};{str(options)}"))
-                        print("Valid moves returned.")
-                        print(f"Current turn: {game_controller.current_player}")
+                        # print("Valid moves returned.")
+                        # print(f"Current turn: {game_controller.current_player}")
 
                     elif reply.startswith("get_current_turn"):
                         # Send current player back to client
                         conn.send(str(game_controller.current_player).encode())
 
-                        print("Current turn returned.")
+                        # print("Current turn returned.")
 
                     elif reply.startswith("get_current_players"):
                         current_locations = {}
@@ -109,28 +108,39 @@ try:
                         current_locations = json.dumps(current_locations)
                         conn.send(current_locations.encode())
 
-                        print("Current locations of players returned.")
+                        # print("Current locations of players returned.")
 
                     elif reply.startswith(f"get_player_cards: {character_name}"):
                         print(f"get_player_cards is called")
                         player_cards = None
                         for player in game_controller.players:
                             if player.character == character_name:
-                                print(f"Character name: {character_name}")
                                 player_cards = player.cards
                         conn.send(str.encode(f"{player_cards}"))
-                        print("Player cards returned.")
+                        # print("Player cards returned.")
 
                     elif reply.startswith(f"execute_move"):
                         move = reply.split(";")[1]
                         option = reply.split(";")[2]
-                        # print(f"Execute curr player: {game_controller.current_player}")
 
-                        # send message to all clients to update game board
-                        # print(f"move: {move}, option: {option}")
                         # Execute move
                         game_controller.execute_move(move, option, chat_database)
-                        print("Move executed.")
+
+                        # Add player turn msg
+                        current_player = game_controller.current_player
+                        message = f"It is {current_player}'s turn, please wait for a move to be executed..."
+                        chat_database.store_chat_message(current_player, "Player Turn", message)
+
+                    elif reply.startswith(f"execute_with_suggestion"):
+                        # Parse suggestion message
+                        move = reply.split(";")[1]
+                        room = reply.split(";")[2]
+                        suspect = reply.split(";")[3]
+                        weapon = reply.split(";")[4]
+                        suggestion = {"room": room, "suspect": suspect, "weapon": weapon}
+
+                        # Execute move
+                        game_controller.execute_move(move, room, chat_database, suggestion=suggestion)
 
                         # Add player turn msg
                         current_player = game_controller.current_player
@@ -140,7 +150,7 @@ try:
                     elif reply.startswith("get_game_logs"):
                         messages = chat_database.get_chatDisplay_messages()
                         conn.send(str.encode(f"{messages}"))
-                        print("Chat logs returned.")
+                        # print("Chat logs returned.")
 
                     else:
                         print("Received: ", reply)
