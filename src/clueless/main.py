@@ -64,8 +64,8 @@ class Client:
             sys.exit(0)
 
         self.main_menu()
-        #self.end_game_tie()
-        #self.end_game_win("Miss Scarlet")
+        # self.end_game_tie()
+        # self.end_game_win("Miss Scarlet")
 
     # def clear_server_msgs(self):
     #     while self.s.recv(1024):
@@ -104,7 +104,7 @@ class Client:
             self.s.send("get_available_characters".encode())
             server_msg = self.s.recv(1024).decode("utf-8")
             avail_characters = json.loads(server_msg)
-            #print(f"Available characters: {avail_characters}")
+            # print(f"Available characters: {avail_characters}")
 
             if "Miss Scarlet" in avail_characters:
                 char_buttons[0].draw_button()
@@ -141,7 +141,6 @@ class Client:
                                 character = button.msg
                                 running = False
                                 self.lobby(character)
-                            
 
             if running:
                 pygame.display.update()
@@ -170,7 +169,7 @@ class Client:
             self.screen.fill(BLACK)
             self.screen.blit(text, textRect)
             self.screen.blit(character_text, characterRect)
-            
+
             # Draw start button if there are at least 3 players
             self.s.send("get_num_players".encode())
             num_players = int(self.s.recv(1024).decode("utf-8"))
@@ -221,7 +220,7 @@ class Client:
         # Initializing game board
         self.s.send("get_current_players".encode())
         server_msg = self.s.recv(1024).decode("utf-8")
-        #print(f"Message received: {server_msg}")
+        # print(f"Message received: {server_msg}")
         locations = ast.literal_eval(server_msg)
         game_board = GameBoard(self.gameUI, locations)
 
@@ -274,7 +273,7 @@ class Client:
             # Check if game is over
             self.s.send("check_game_over".encode())
             server_msg = self.s.recv(1024).decode("utf-8")
-            #print(f"Server message: {server_msg}")
+            # print(f"Server message: {server_msg}")
             if server_msg.split(":")[0] == "winner":
                 winner = server_msg.split(":")[1]
                 self.end_game_win(winner)
@@ -472,17 +471,17 @@ class Client:
                                             )
                                         )
                                         start_y += 50
-                                        
-#                                 elif button.msg == "Accuse":
-#                                     print("Pressed Accuse button")
-#                                     self.s.send("accuse".encode())
-#                                     server_msg = self.s.recv(1024).decode("utf-8")
-#                                     print(f"Server message: {server_msg}")
-#                                     if server_msg.split(":")[0] == "winner":
-#                                         winner = server_msg.split(":")[1]
-#                                         self.end_game_win(winner)
-#                                     else:
-#                                         pass
+
+                            #                                 elif button.msg == "Accuse":
+                            #                                     print("Pressed Accuse button")
+                            #                                     self.s.send("accuse".encode())
+                            #                                     server_msg = self.s.recv(1024).decode("utf-8")
+                            #                                     print(f"Server message: {server_msg}")
+                            #                                     if server_msg.split(":")[0] == "winner":
+                            #                                         winner = server_msg.split(":")[1]
+                            #                                         self.end_game_win(winner)
+                            #                                     else:
+                            #                                         pass
 
                             # For start button
                             else:
@@ -605,7 +604,7 @@ class Client:
 
     def end_game_win(self, winner_name):
         print("End Game Win Scene Started")
-        
+
         # Display the end game scene
         font = pygame.font.Font("freesansbold.ttf", 32)
         text = font.render("We Have a Winner!", True, WHITE, BLACK)
@@ -637,7 +636,7 @@ class Client:
 
     def end_game_tie(self):
         print("End Game Tie Scene Started")
-        
+
         # Display the end game scene
         font = pygame.font.Font("freesansbold.ttf", 32)
         text = font.render("This Game Has No Winner", True, WHITE, BLACK)

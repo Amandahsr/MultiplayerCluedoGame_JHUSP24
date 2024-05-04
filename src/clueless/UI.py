@@ -208,8 +208,8 @@ class GameBoard:
             icon_x = board_location[0] - icon_width / 2
             icon_y = board_location[1] - icon_height / 2
             adjusted_location = (icon_x, icon_y)
-            #print(f"{character} is at {position}")
-            
+            # print(f"{character} is at {position}")
+
             # Draw the character icon at the pixel coordinates
             icon.draw(surface, adjusted_location)
 
@@ -244,7 +244,7 @@ class CharacterIcon:
 
     def draw(self, surface, position):
         # Draw the icon on the screen at the given position
-        #print(f"position passed to icon.draw: {position}")
+        # print(f"position passed to icon.draw: {position}")
         surface.blit(self.surface, position)
 
 

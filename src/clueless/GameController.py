@@ -67,7 +67,12 @@ class GameController:
             "Hall": ["Study-Hall Hallway", "Hall-Billiard Hallway", "Hall-Lounge Hallway"],
             "Lounge": ["Hall-Lounge Hallway", "Lounge-Dining Hallway"],
             "Library": ["Study-Library Hallway", "Library-Billiard Hallway", "Library-Conservatory Hallway"],
-            "Billiard": ["Hall-Billiard Hallway", "Library-Billiard Hallway", "Billiard-Ballroom Hallway", "Billiard-Dining Hallway"],
+            "Billiard": [
+                "Hall-Billiard Hallway",
+                "Library-Billiard Hallway",
+                "Billiard-Ballroom Hallway",
+                "Billiard-Dining Hallway",
+            ],
             "Dining": ["Lounge-Dining Hallway", "Billiard-Dining Hallway", "Dining-Kitchen Hallway"],
             "Conservatory": ["Library-Conservatory Hallway", "Conservatory-Ballroom Hallway"],
             "Ballroom": ["Conservatory-Ballroom Hallway", "Billiard-Ballroom Hallway", "Ballroom-Kitchen Hallway"],
@@ -99,9 +104,9 @@ class GameController:
 
         # Store message to return to chatDisplay
         self.chat_msg = ""
-        self.disapproval_cards = [] #for disapproval logic
-        self.temp_current_player = None #for disapproval logic
-        self.disapproval = False #for disapproval logic
+        self.disapproval_cards = []  # for disapproval logic
+        self.temp_current_player = None  # for disapproval logic
+        self.disapproval = False  # for disapproval logic
 
     def set_available_cards(self, x):
         self.available_cards = x
@@ -167,7 +172,7 @@ class GameController:
             move = ["Disapproval"]
             options = {"Disapproval": self.disapproval_cards}
             return move, options
-        
+
         else:
             moves = []  # initializing the valid moves
             options = {
@@ -193,7 +198,7 @@ class GameController:
                 options["Hallways"] = ["Library-Conservatory Hallway"]
             elif self.current_player.character == "Professor Plum":
                 options["Hallways"] = ["Study-Library Hallway"]
-            #self.current_player.start == False  # it is not the current player's first move anymore, set to False
+            # self.current_player.start == False  # it is not the current player's first move anymore, set to False
             return moves, options
 
         # Move to Room from Hallway
@@ -224,7 +229,6 @@ class GameController:
             elif self.current_player.location == "Ballroom-Kitchen Hallway":
                 options["Rooms"] = ["Ballroom", "Kitchen"]
             return moves, options
-
 
         # Move to hallway from room, take secret passageway, and stay in room (if moved) and suggest
         if self.current_player.location in self.rooms:
@@ -293,7 +297,10 @@ class GameController:
         # print(next.character)
         # print(disapproval_lst)
 
-        return next, disapproval_lst  # returns player who disapproved and cards to disapprove, needs to go to another class
+        return (
+            next,
+            disapproval_lst,
+        )  # returns player who disapproved and cards to disapprove, needs to go to another class
 
     # handles the suggestion logic after a player selected their move, called during execute_move
     # suggestion is assumed to be in a dict specified above: {suspect:option_clicked, weapon:option_clicked, room:char_current_room}
@@ -313,6 +320,11 @@ class GameController:
         if accusation.get("suspect") == self.answer.get("suspect"):
             if accusation.get("weapon") == self.answer.get("weapon"):
                 if accusation.get("room") == self.answer.get("room"):
+                    # Track whether game has ended
+                    self.winner = self.current_player
+                    self.game_over = True
+                    self.win = True
+
                     return True
         else:
             return False
@@ -324,6 +336,7 @@ class GameController:
     # suggestion is also needed by the suggest() function
     def execute_move(self, move: str, option: str, chat_database, suggestion: Dict = None):
         correct = None
+        accusation_triggered = False
         if self.disapproval:
             self.disapproval = False
             self.disapproval_cards = []
@@ -353,8 +366,7 @@ class GameController:
                 else:
                     self.current_player.set_in_corner_room(False)
                 temp, self.disapproval_cards = self.suggest(suggestion)
-                self.disapproval =True 
-
+                self.disapproval = True
 
                 # Store and display msg
                 passageway_dest = option
@@ -401,6 +413,7 @@ class GameController:
                 chat_database.store_chat_message(characterName, move, log_msg)
 
             if move == "Accuse":
+                accusation_triggered = True
                 characterName = self.current_player.character
 
                 # Store and display msg
@@ -423,17 +436,20 @@ class GameController:
                 chat_database.store_chat_message(characterName, move, log_msg1)
                 chat_database.store_chat_message(characterName, move, log_msg2)
 
-        # set next current player as the turn is complete, if "Pass" is chosen, current_player is reset as well
-        if correct == None and self.disapproval == False:
-            self.current_player = self.next_player(self.current_player)
-        else:
-            self.temp_current_player = temp #for disapproval logic
+        if not accusation_triggered:
+            # set next current player as the turn is complete, if "Pass" is chosen, current_player is reset as well
+            if correct == None and self.disapproval == False:
+                self.current_player = self.next_player(self.current_player)
+
+            else:
+                self.temp_current_player = temp  # for disapproval logic
 
         # calls valid moves to start next turn
         # self.valid_moves()
 
 
 """g = GameController()
+
 g.initialize_player('Professor Plum')
 g.initialize_player('Mrs. Peacock')
 g.initialize_player('Mr. Green')

@@ -45,7 +45,6 @@ try:
         # Send a connection message to the client
         conn.send(str.encode("Connected to server"))
 
-
         while True:
             try:
                 # Receive data from the client
@@ -54,7 +53,13 @@ try:
                 reply = data.decode("utf-8")
 
                 # Avoid spamming server with these messages
-                if not reply in ["get_current_turn", "get_game_logs", "get_current_players", "valid_moves"]:
+                if not reply in [
+                    "get_current_turn",
+                    "get_game_logs",
+                    "get_current_players",
+                    "valid_moves",
+                    "check_game_over",
+                ]:
                     print(f"Received: {reply}")  # Debug print
 
                 if not data:
@@ -157,6 +162,7 @@ try:
                         weapon = reply.split(";")[4]
                         suggestion = {"room": room, "suspect": suspect, "weapon": weapon}
 
+                        print(f"Server receieved move: {move}")
                         # Execute move
                         game_controller.execute_move(move, room, chat_database, suggestion=suggestion)
 
@@ -169,25 +175,25 @@ try:
                         messages = chat_database.get_chatDisplay_messages()
                         conn.send(str.encode(f"{messages}"))
                         # print("Chat logs returned.")
-                    
+
                     elif reply.startswith("check_game_over"):
-                        #print(f"Current flags: game_over: {game_controller.game_over}, win: {game_controller.win}, tie: {game_controller.tie}")
+                        # print(f"Current flags: game_over: {game_controller.game_over}, win: {game_controller.win}, tie: {game_controller.tie}")
                         if game_controller.game_over and game_controller.win:
                             conn.send(str.encode(f"winner:{game_controller.winner}"))
                         elif game_controller.game_over and game_controller.tie:
                             conn.send(str.encode("tie"))
                         else:
                             conn.send(str.encode("continue"))
-                            
-#                    elif reply.startswith("accuse"):
-#                         print("Received accuse message from client")
-#                         print(f"Correct accuse answer is {answer}")
 
-#                         if game_controller.accuse() == True:
-#                             game_controller.winner = game_controller.current_player
-#                             game_controller.game_over = True
-#                             game_controller.win = True
-#                             conn.send(str.encode(f"winner:{game_controller.winner}"))
+                    #                    elif reply.startswith("accuse"):
+                    #                         print("Received accuse message from client")
+                    #                         print(f"Correct accuse answer is {answer}")
+
+                    #                         if game_controller.accuse() == True:
+                    #                             game_controller.winner = game_controller.current_player
+                    #                             game_controller.game_over = True
+                    #                             game_controller.win = True
+                    #                             conn.send(str.encode(f"winner:{game_controller.winner}"))
 
                     else:
                         print("Received: ", reply)
@@ -212,6 +218,7 @@ try:
 
     # Main server loop
     while True:
+        print(f"SERVER RECEIVED GAME ANSWER: {answer}")
         # Accept a new connection
         conn, addr = s.accept()
         print("Connected to:", addr)
