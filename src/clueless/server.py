@@ -45,6 +45,7 @@ try:
         # Send a connection message to the client
         conn.send(str.encode("Connected to server"))
 
+
         while True:
             try:
                 # Receive data from the client
@@ -63,7 +64,11 @@ try:
                     break
 
                 else:
-                    if reply.startswith("select_character:"):
+                    if reply.startswith("get_available_characters"):
+                        character_list = json.dumps(available_characters)
+                        conn.send(str.encode(character_list))
+
+                    elif reply.startswith("select_character:"):
                         character_name = reply.split(":")[1]
                         print(f"Character selected: {character_name}")  # Debug print
 
@@ -75,6 +80,10 @@ try:
                             selected_characters.append(character_name)
                             print(f"{character_name} has been selected.")
                             game_controller.initialize_player(character_name)
+
+                    elif reply.startswith("get_num_players"):
+                        num_players = len(selected_characters)
+                        conn.send(str.encode(str(num_players)))
 
                     elif reply.startswith("start_game"):
                         print("Game start button pressed")
@@ -88,6 +97,12 @@ try:
                         current_player = game_controller.current_player
                         message = f"It is {current_player}'s turn, please wait for a move to be executed..."
                         chat_database.store_chat_message(current_player, "Player Turn", message)
+
+                    elif reply.startswith("check_start"):
+                        if game_controller.initialized:
+                            conn.send(str.encode("true, start game"))
+                        else:
+                            conn.send(str.encode("game not started yet"))
 
                     elif reply.startswith("valid_moves"):
                         valid_moves, options = game_controller.valid_moves()
@@ -111,7 +126,6 @@ try:
                             current_locations[player.character] = player.location
                         current_locations = json.dumps(current_locations)
                         conn.send(current_locations.encode())
-
                         # print("Current locations of players returned.")
 
                     elif reply.startswith(f"get_player_cards: {character_name}"):
@@ -155,6 +169,25 @@ try:
                         messages = chat_database.get_chatDisplay_messages()
                         conn.send(str.encode(f"{messages}"))
                         # print("Chat logs returned.")
+                    
+                    elif reply.startswith("check_game_over"):
+                        #print(f"Current flags: game_over: {game_controller.game_over}, win: {game_controller.win}, tie: {game_controller.tie}")
+                        if game_controller.game_over and game_controller.win:
+                            conn.send(str.encode(f"winner:{game_controller.winner}"))
+                        elif game_controller.game_over and game_controller.tie:
+                            conn.send(str.encode("tie"))
+                        else:
+                            conn.send(str.encode("continue"))
+                            
+#                    elif reply.startswith("accuse"):
+#                         print("Received accuse message from client")
+#                         print(f"Correct accuse answer is {answer}")
+
+#                         if game_controller.accuse() == True:
+#                             game_controller.winner = game_controller.current_player
+#                             game_controller.game_over = True
+#                             game_controller.win = True
+#                             conn.send(str.encode(f"winner:{game_controller.winner}"))
 
                     else:
                         print("Received: ", reply)
@@ -174,7 +207,7 @@ try:
     # Initialize global objects for use across all clients
     player_id = 0
     game_controller = GameController()
-    game_controller.create_answer()
+    answer = game_controller.create_answer()
     chat_database = chatDatabase()
 
     # Main server loop
