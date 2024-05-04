@@ -135,7 +135,7 @@ from textwrap import wrap
 #         else:
 #             # Specify no messages if none found associated to filter flags
 #             return f"No messages related to {filter_flags} were found."
-        
+
 #     def get_chatDisplay_messages(self) -> List[str]:
 #         """
 #         Returns most recent 5 messages stored in the database for in-game log display.
@@ -146,7 +146,8 @@ from textwrap import wrap
 
 #         return log_msgs
 
-class chatDatabase():
+
+class chatDatabase:
     def __init__(self) -> None:
         self.log_msgs = []
 
@@ -156,18 +157,18 @@ class chatDatabase():
         """
         # Return most recent 5
         log_msgs = [f"{msg['message_time']}: {msg['message']}" for msg in self.log_msgs][-5:]
-        
+
         return log_msgs
-    
+
     def get_recent_5_messages(self) -> List[str]:
         """
         Returns most recent 5 messages stored in the database for in-game log display.
         """
         # Return most recent 5
-        msgs = [msg['message'] for msg in self.log_msgs][-5:]
+        msgs = [msg["message"] for msg in self.log_msgs][-5:]
 
         return msgs
-    
+
     def store_chat_message(
         self,
         character_Name: str,
