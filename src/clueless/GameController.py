@@ -304,6 +304,7 @@ class GameController:
     # option is whatever the player also selected, for example if move room was selected, the option is the room they selected, use the naming convention in self.rooms
     # suggestion is also needed by the suggest() function
     def execute_move(self, move: str, option: str, chat_database, suggestion: Dict = None):
+        correct = None
         if move == "Take Secret Passageway and Suggest":  # game state updated
             self.current_player.set_location(option)
             self.current_player.set_in_room(True)
