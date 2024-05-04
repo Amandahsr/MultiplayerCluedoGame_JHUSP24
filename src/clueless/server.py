@@ -62,7 +62,11 @@ try:
                     break
 
                 else:
-                    if reply.startswith("select_character:"):
+                    if reply.startswith("get_available_characters"):
+                        character_list = json.dumps(available_characters)
+                        conn.send(str.encode(character_list))
+
+                    elif reply.startswith("select_character:"):
                         character_name = reply.split(":")[1]
                         print(f"Character selected: {character_name}")  # Debug print
 

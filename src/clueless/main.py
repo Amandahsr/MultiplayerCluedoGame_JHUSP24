@@ -51,7 +51,6 @@ class Client:
     def check_turn(self):
         self.s.send("get_current_turn".encode())
         server_msg = self.s.recv(1024).decode("utf-8")
-
         return server_msg == self.character
 
     def main_menu(self):
@@ -78,8 +77,27 @@ class Client:
         while running:
             self.screen.fill(BLACK)
             self.screen.blit(text, textRect)
-            for button in self.buttons:
-                button.draw_button()
+
+            self.s.send("get_available_characters".encode())
+            server_msg = self.s.recv(1024).decode("utf-8")
+            avail_characters = json.loads(server_msg)
+            print(f"Available characters: {avail_characters}")
+
+            if "Miss Scarlet" in avail_characters:
+                char_buttons[0].draw_button()
+            if "Col. Mustard" in avail_characters:
+                char_buttons[1].draw_button()
+            if "Mrs. White" in avail_characters:
+                char_buttons[2].draw_button()
+            if "Mr. Green" in avail_characters:
+                char_buttons[3].draw_button()
+            if "Mrs. Peacock" in avail_characters:
+                char_buttons[4].draw_button()
+            if "Professor Plum" in avail_characters:
+                char_buttons[5].draw_button()
+
+            # for button in self.buttons:
+            #     button.draw_button()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -94,11 +112,12 @@ class Client:
 
                     for button in self.buttons:
                         if button.check_button(mouse_x, mouse_y):
-                            self.s.send(f"{button.command_function}:{button.msg}".encode())
-                            print(f"{button.msg} selection sent to server")  # Debug print
-                            character = button.msg
-                            running = False
-                            self.lobby(character)
+                            if button.msg in avail_characters:
+                                self.s.send(f"{button.command_function}:{button.msg}".encode())
+                                print(f"{button.msg} selection sent to server")  # Debug print
+                                character = button.msg
+                                running = False
+                                self.lobby(character)
                             
 
             if running:
@@ -194,7 +213,7 @@ class Client:
         while running:
             # Check whether it is current player's turn
             is_turn = self.check_turn()
-            self.buttons = []
+            self.buttons = [] 
 
             # Draw four sections
             pygame.draw.rect(self.screen, BLACK, game_board_rect)
