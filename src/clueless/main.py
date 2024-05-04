@@ -283,6 +283,17 @@ class Client:
                                 curr_move = button.msg
 
                                 # Extract options based on move clicked
+                                if button.msg == "Accuse":
+
+                                    print("accuse registered")
+                                    #self.s.send("execute_move;Accuse; ".encode())  #call this later after all of the info has been collected
+                                    available_options.extend(options["Romms"])
+                                    for i in options["Rooms"]:
+                                        if button.msg == i:
+                                            Room_accuse = i
+                                            available_options.extend(options["Weapons"])
+
+                                
                                 if button.msg == "Move To Hallway":
                                     print("Move to Hallway registered")
                                     available_options.extend(options["Hallways"])
