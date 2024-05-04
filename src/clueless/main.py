@@ -357,6 +357,14 @@ class Client:
                                     else:
                                         pass
 
+                                    # Hannah's implementation
+                                    # #self.s.send("execute_move;Accuse; ".encode())  #call this later after all of the info has been collected
+                                    # available_options.extend(options["Romms"])
+                                    # for i in options["Rooms"]:
+                                    #     if button.msg == i:
+                                    #         Room_accuse = i
+                                    #         available_options.extend(options["Weapons"])
+
                                 # Initialize available options buttons
                                 start_x = 900
                                 start_y = 500
