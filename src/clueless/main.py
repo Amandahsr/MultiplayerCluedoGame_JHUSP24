@@ -147,7 +147,11 @@ class Client:
             self.screen.fill(BLACK)
             self.screen.blit(text, textRect)
             self.screen.blit(character_text, characterRect)
-            start_button.draw_button()
+            
+            self.s.send("get_num_players".encode())
+            num_players = int(self.s.recv(1024).decode("utf-8"))
+            if num_players >= 3:
+                start_button.draw_button()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

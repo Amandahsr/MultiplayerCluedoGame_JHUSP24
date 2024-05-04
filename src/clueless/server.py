@@ -79,6 +79,10 @@ try:
                             print(f"{character_name} has been selected.")
                             game_controller.initialize_player(character_name)
 
+                    elif reply.startswith("get_num_players"):
+                        num_players = len(selected_characters)
+                        conn.send(str.encode(str(num_players)))
+
                     elif reply.startswith("start_game"):
                         print("Game start button pressed")
                         if not game_controller.initialized:
