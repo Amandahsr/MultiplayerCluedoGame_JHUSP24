@@ -170,25 +170,25 @@ class GameBoard:
         # Map each board spot to its corresponding coordinates
         board_spots = {
             "Study": (center_x - 210, center_y - 125),
-            "SH_Hall": (center_x - 110, center_y - 135),
+            "Study-Hall Hallway": (center_x - 110, center_y - 135),
             "Hall": (center_x - 5, center_y - 125),
-            "HL_Hall": (center_x + 95, center_y - 135),
+            "Hall-Lounge Hallway": (center_x + 95, center_y - 135),
             "Lounge": (center_x + 200, center_y - 125),
-            "SL_Hall": (center_x - 210, center_y - 70),
-            "HB_Hall": (center_x - 5, center_y - 70),
-            "LD_Hall": (center_x + 200, center_y - 70),
+            "Study-Library Hallway": (center_x - 210, center_y - 70),
+            "Hall-Billiard Hallway": (center_x - 5, center_y - 70),
+            "Lounge-Dining Hallway": (center_x + 200, center_y - 70),
             "Library": (center_x - 210, center_y + 10),
-            "LB_Hall": (center_x - 110, center_y - 3),
+            "Library-Billiard Hallway": (center_x - 110, center_y - 3),
             "Billiard": (center_x - 5, center_y + 10),
-            "BD_Hall": (center_x + 95, center_y - 3),
+            "Billiard-Dining Hallway": (center_x + 95, center_y - 3),
             "Dining": (center_x + 200, center_y + 10),
-            "LC_Hall": (center_x - 210, center_y + 70),
-            "BB_Hall": (center_x - 5, center_y + 70),
-            "DK_Hall": (center_x + 200, center_y + 70),
+            "Library-Conservatory Hallway": (center_x - 210, center_y + 70),
+            "Billiard-Ballroom Hallway": (center_x - 5, center_y + 70),
+            "Dining-Kitchen Hallway": (center_x + 200, center_y + 70),
             "Conservatory": (center_x - 210, center_y + 130),
-            "CB_Hall": (center_x - 110, center_y + 135),
+            "Conservatory-Ballroom Hallway": (center_x - 110, center_y + 135),
             "Ballroom": (center_x - 5, center_y + 130),
-            "BK_Hall": (center_x + 95, center_y + 135),
+            "Ballroom-Kitchen Hallway": (center_x + 95, center_y + 135),
             "Kitchen": (center_x + 200, center_y + 130),
             "MS_Start": (center_x + 95, center_y - 170),
             "CM_Start": (center_x + 245, center_y - 70),
@@ -208,6 +208,7 @@ class GameBoard:
             icon_x = board_location[0] - icon_width / 2
             icon_y = board_location[1] - icon_height / 2
             adjusted_location = (icon_x, icon_y)
+            # print(f"{character} is at {position}")
 
             # Draw the character icon at the pixel coordinates
             icon.draw(surface, adjusted_location)
