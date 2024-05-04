@@ -21,6 +21,7 @@ execute_move(move, option, suggestion), to be called after player input is given
 class GameController:
 
     def __init__(self, players=[]):
+        self.answer = {}
         self.cards = {
             "suspect": ["Professor Plum", "Mrs. Peacock", "Mr. Green", "Mrs. White", "Col. Mustard", "Miss Scarlet"],
             "room": [
@@ -105,11 +106,12 @@ class GameController:
         suspect = random.choice(self.cards.get("suspect"))
         room = random.choice(self.cards.get("room"))
         weapon = random.choice(self.cards.get("weapon"))
-        answer = {"suspect": suspect, "room": room, "weapon": weapon}
+        self.answer = {"suspect": suspect, "room": room, "weapon": weapon}
         self.available_cards.remove(suspect)
         self.available_cards.remove(room)
         self.available_cards.remove(weapon)
-        return answer
+
+        return self.answer
 
     # need input for user interface, should be run every time a player joins
     def initialize_player(self, character):  # need character from Server i think, order of players joining as well
@@ -393,16 +395,26 @@ class GameController:
 
             if move == "Accuse":
                 characterName = self.current_player.character
-                self.chat_msg = f"{characterName} accuses."
+
+                # Store and display msg
+                characterName = self.current_player.character
+                weapon = suggestion["weapon"]
+                suspect = suggestion["suspect"]
+                room = suggestion["room"]
+                log_msg1 = f"{characterName} accuses [{room}, {suspect}, {weapon}]."
+
                 correct = self.accuse(suggestion)  # if accusation is correct
                 if correct:
-                    self.chat_msg = f"{characterName} wins!"
+                    log_msg2 = f"{characterName} wins!"
                 else:
-                    self.chat_msg = f"{characterName}'s accusation was wrong. They're out of the game."
+                    log_msg2 = f"{characterName}'s accusation was wrong. They're out of the game."
                     loser = self.current_player
                     self.players.remove(loser)
                     self.current_player = self.next_player(self.current_player)
                     self.turn_order.remove(loser.id)
+
+                chat_database.store_chat_message(characterName, move, log_msg1)
+                chat_database.store_chat_message(characterName, move, log_msg2)
 
         # set next current player as the turn is complete, if "Pass" is chosen, current_player is reset as well
         if correct == None and self.disapproval == False:
