@@ -96,8 +96,12 @@ try:
                         # print(f"Current turn: {game_controller.current_player}")
 
                     elif reply.startswith("get_current_turn"):
-                        # Send current player back to client
-                        conn.send(str(game_controller.current_player).encode())
+                        disapprove_status = game_controller.disapproval
+                        if not disapprove_status:
+                            # Send current player back to client
+                            conn.send(str(game_controller.current_player).encode())
+                        else:
+                            conn.send(str(game_controller.temp_current_player).encode())
 
                         # print("Current turn returned.")
 

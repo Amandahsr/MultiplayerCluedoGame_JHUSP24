@@ -92,9 +92,10 @@ class GameController:
         self.turn_order = []
         self.start_pos = ["MS_Start", "CM_Start", "MW_Start", "MG_Start", "MP_Start", "PP_Start"]
         self.initialized = False
+
         # Store message to return to chatDisplay
         self.chat_msg = ""
-        self.disappoval_cards = [] #for disapproval logic
+        self.disapproval_cards = [] #for disapproval logic
         self.temp_current_player = None #for disapproval logic
         self.disapproval = False #for disapproval logic
 
@@ -128,7 +129,7 @@ class GameController:
         if character == "Professor Plum":
             p = Player("Professor Plum", "PP_Start", True, 6)
         self.players.append(p)  # adds players to game state
-        print(f"Initialized Players: {', '.join([player.character for player in self.players])}")  # Debug statement
+        # print(f"Initialized Players: {', '.join([player.character for player in self.players])}")  # Debug statement
         return p
 
     # should be run after every player joins
@@ -161,7 +162,8 @@ class GameController:
         if self.disapproval:
             move = ["Disapproval"]
             options = {"Disapproval": self.disapproval_cards}
-            return moves, options
+            return move, options
+        
         else:
             moves = []  # initializing the valid moves
             options = {
@@ -268,7 +270,7 @@ class GameController:
     # dict is assumed to be structure like self.cards field {'suspect' : 'Miss Peacock', 'weapon' : candlestick, 'Room' : 'Dining'}
     # return player who disapproved and options for disapproval, must be displayed
     def disapprove_suggestion(self, suggestion):
-        disapproval = []
+        disapproval_lst = []
         cur = self.current_player
         next = self.next_player(cur)
         num = 0
@@ -319,15 +321,15 @@ class GameController:
         correct = None
         if self.disapproval:
             self.disapproval = False
-            self.disappoval_cards = []
+            self.disapproval_cards = []
             self.temp_current_player = None
         else:
             if move == "Take Secret Passageway and Suggest":  # game state updated
                 self.current_player.set_location(option)
                 self.current_player.set_in_room(True)
                 self.current_player.set_in_corner_room(True)
-                temp, d_lst = self.suggest(suggestion)
-                self.disapproval(True)
+                temp, self.disapproval_cards = self.suggest(suggestion)
+                self.disapproval = True
 
                 # Store and display msg
                 passageway_dest = option
@@ -345,8 +347,8 @@ class GameController:
                     self.current_player.set_in_corner_room(True)
                 else:
                     self.current_player.set_in_corner_room(False)
-                temp, d_lst = self.suggest(suggestion)
-                self.disapproval(True)
+                temp, self.disapproval_cards = self.suggest(suggestion)
+                self.disapproval =True 
 
 
                 # Store and display msg
@@ -376,8 +378,8 @@ class GameController:
                     self.current_player.set_in_corner_room(True)
                 else:
                     self.current_player.set_in_corner_room(False)
-                temp, d_lst = self.suggest(suggestion)
-                self.disapproval(True)
+                temp, self.disapproval_cards = self.suggest(suggestion)
+                self.disapproval = True
 
                 # Store and display msg
                 characterName = self.current_player.character
