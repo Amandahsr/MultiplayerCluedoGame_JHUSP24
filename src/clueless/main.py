@@ -187,7 +187,7 @@ class Client:
         # Initializing game board
         self.s.send("get_current_players".encode())
         server_msg = self.s.recv(1024).decode("utf-8")
-        print(f"Message received: {server_msg}")
+        #print(f"Message received: {server_msg}")
         locations = ast.literal_eval(server_msg)
         game_board = GameBoard(self.gameUI, locations)
 
@@ -212,7 +212,8 @@ class Client:
         running = True
         options_showed = False
         #locations = None
-      
+        
+
         # Game loop
         while running:
             # Check whether it is current player's turn
@@ -233,7 +234,7 @@ class Client:
             # Check if game is over
             self.s.send("check_game_over".encode())
             server_msg = self.s.recv(1024).decode("utf-8")
-            print(f"Server message: {server_msg}")
+            #print(f"Server message: {server_msg}")
             if server_msg.split(":")[0] == "winner":
                 winner = server_msg.split(":")[1]
                 self.end_game_win(winner)
@@ -261,6 +262,8 @@ class Client:
             chat_display = chatDisplay(chat_display_rect, self.screen, chat_display_rect.x + chat_display_rect.width // 2, chat_display_rect.y + chat_display_rect.height // 2, log_msgs)
             chat_display.display_chat_messages()
 
+            # Debugging overlay on display
+            debug(pygame.mouse.get_pos())
 
             # Render available moves button
             if not options_showed and is_turn:
