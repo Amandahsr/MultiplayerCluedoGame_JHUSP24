@@ -94,6 +94,9 @@ class GameController:
         self.initialized = False
         # Store message to return to chatDisplay
         self.chat_msg = ""
+        self.disappoval_cards = [] #for disapproval logic
+        self.temp_current_player = None #for disapproval logic
+        self.disapproval = False #for disapproval logic
 
     def set_available_cards(self, x):
         self.available_cards = x
@@ -155,92 +158,97 @@ class GameController:
 
     # to be run at the start of a player's turn
     def valid_moves(self):  # moves goes to player or client to display
-        moves = []  # initializing the valid moves
-        options = {
-            "Hallways": None,
-            "Rooms": None,
-            "Rooms_Passageway": None,
-        }  # initializes the options a player can move to
-        moves.append("Pass")  # every turn a player can pass
-        moves.append("Accuse")  # every turn a player can accuse
-
-        # First turn logic
-        if self.current_player.location in self.start_pos:  # first move must be to adjacent hallway
-            moves.append("Move To Hallway")
-            if self.current_player.character == "Miss Scarlet":
-                options["Hallways"] = ["HL_Hall"]
-            elif self.current_player.character == "Col. Mustard":
-                options["Hallways"] = ["LD_Hall"]
-            elif self.current_player.character == "Mrs. White":
-                options["Hallways"] = ["BK_Hall"]
-            elif self.current_player.character == "Mr. Green":
-                options["Hallways"] = ["CB_Hall"]
-            elif self.current_player.character == "Mrs. Peacock":
-                options["Hallways"] = ["LC_Hall"]
-            elif self.current_player.character == "Professor Plum":
-                options["Hallways"] = ["SL_Hall"]
-            # self.current_player.start == False  # it is not the current player's first move anymore, set to False
+        if self.disapproval:
+            move = ["Disapproval"]
+            options = {"Disapproval": self.disapproval_cards}
             return moves, options
+        else:
+            moves = []  # initializing the valid moves
+            options = {
+                "Hallways": None,
+                "Rooms": None,
+                "Rooms_Passageway": None,
+            }  # initializes the options a player can move to
+            moves.append("Pass")  # every turn a player can pass
+            moves.append("Accuse")  # every turn a player can accuse
 
-        # Move to Room from Hallway
-        if self.current_player.location in self.hallways:
-            moves.append("Move To Room and Suggest")
-            if self.current_player.location == "SL_Hall":  # creating the rooms the player can move into
-                options["Rooms"] = ["Study", "Library"]
-            elif self.current_player.location == "SH_Hall":
-                options["Rooms"] = ["Study", "Hall"]
-            elif self.current_player.location == "HL_Hall":
-                options["Rooms"] = ["Hall", "Lounge"]
-            elif self.current_player.location == "HB_Hall":
-                options["Rooms"] = ["Hall", "Billiard"]
-            elif self.current_player.location == "LD_Hall":
-                options["Rooms"] = ["Library", "Dining"]
-            elif self.current_player.location == "LB_Hall":
-                options["Rooms"] = ["Library", "Billiard"]
-            elif self.current_player.location == "BD_Hall":
-                options["Rooms"] = ["Billiard", "Dining"]
-            elif self.current_player.location == "LC_Hall":
-                options["Rooms"] = ["Library", "Conservatory"]
-            elif self.current_player.location == "BB_Hall":
-                options["Rooms"] = ["Billiard", "Ballroom"]
-            elif self.current_player.location == "DK_Hall":
-                options["Rooms"] = ["Dining", "Kitchen"]
-            elif self.current_player.location == "CB_Hall":
-                options["Rooms"] = ["Conservatory", "Ballroom"]
-            elif self.current_player.location == "BK_Hall":
-                options["Rooms"] = ["Ballroom", "Kitchen"]
-            return moves, options
-
-        # Move to hallway from room, take secret passageway, and stay in room (if moved) and suggest
-        if self.current_player.location in self.rooms:
-            num = 0
-            adj_halls = self.board.get(self.current_player.location)  # adjacent hallways
-            print(adj_halls)
-            max = len(adj_halls)  # used to compare number of players in the adjacent halls
-            for i in self.players:  # check to see if hallways from the room are blocked
-                if (
-                    i.location in adj_halls
-                ):  # looks up the hallways adjacent to room and checks against other player's locations
-                    adj_halls.remove(
-                        i.location
-                    )  # removes hall in player in hall because it is not valid to move to that hall
-                    num += 1
-            if num != max:  # comparing the number of players in adjacent hallways to the number of adjacent hallways
+            # First turn logic
+            if self.current_player.location in self.start_pos:  # first move must be to adjacent hallway
                 moves.append("Move To Hallway")
-                options["Hallways"] = adj_halls
-            if self.current_player.location in self.corner_rooms:
-                moves.append("Take Secret Passageway and Suggest")
-                if self.current_player.location == "Study":
-                    options["Rooms_Passageway"] = "Kitchen"
-                elif self.current_player.location == "Kitchen":
-                    options["Rooms_Passageway"] = "Study"
-                elif self.current_player.location == "Lounge":
-                    options["Rooms_Passageway"] = "Conversatory"
-                elif self.current_player.location == "Conversatory":
-                    options["Rooms_Passageway"] = "Lounge"
-            if self.current_player.moved == True:  # if player was moved to a room by another player via suggestion
-                moves.append("Suggest")  # stay in room and suggest
-            return moves, options
+                if self.current_player.character == "Miss Scarlet":
+                    options["Hallways"] = ["HL_Hall"]
+                elif self.current_player.character == "Col. Mustard":
+                    options["Hallways"] = ["LD_Hall"]
+                elif self.current_player.character == "Mrs. White":
+                    options["Hallways"] = ["BK_Hall"]
+                elif self.current_player.character == "Mr. Green":
+                    options["Hallways"] = ["CB_Hall"]
+                elif self.current_player.character == "Mrs. Peacock":
+                    options["Hallways"] = ["LC_Hall"]
+                elif self.current_player.character == "Professor Plum":
+                    options["Hallways"] = ["SL_Hall"]
+                # self.current_player.start == False  # it is not the current player's first move anymore, set to False
+                return moves, options
+
+            # Move to Room from Hallway
+            if self.current_player.location in self.hallways:
+                moves.append("Move To Room and Suggest")
+                if self.current_player.location == "SL_Hall":  # creating the rooms the player can move into
+                    options["Rooms"] = ["Study", "Library"]
+                elif self.current_player.location == "SH_Hall":
+                    options["Rooms"] = ["Study", "Hall"]
+                elif self.current_player.location == "HL_Hall":
+                    options["Rooms"] = ["Hall", "Lounge"]
+                elif self.current_player.location == "HB_Hall":
+                    options["Rooms"] = ["Hall", "Billiard"]
+                elif self.current_player.location == "LD_Hall":
+                    options["Rooms"] = ["Library", "Dining"]
+                elif self.current_player.location == "LB_Hall":
+                    options["Rooms"] = ["Library", "Billiard"]
+                elif self.current_player.location == "BD_Hall":
+                    options["Rooms"] = ["Billiard", "Dining"]
+                elif self.current_player.location == "LC_Hall":
+                    options["Rooms"] = ["Library", "Conservatory"]
+                elif self.current_player.location == "BB_Hall":
+                    options["Rooms"] = ["Billiard", "Ballroom"]
+                elif self.current_player.location == "DK_Hall":
+                    options["Rooms"] = ["Dining", "Kitchen"]
+                elif self.current_player.location == "CB_Hall":
+                    options["Rooms"] = ["Conservatory", "Ballroom"]
+                elif self.current_player.location == "BK_Hall":
+                    options["Rooms"] = ["Ballroom", "Kitchen"]
+                return moves, options
+
+            # Move to hallway from room, take secret passageway, and stay in room (if moved) and suggest
+            if self.current_player.location in self.rooms:
+                num = 0
+                adj_halls = self.board.get(self.current_player.location)  # adjacent hallways
+                print(adj_halls)
+                max = len(adj_halls)  # used to compare number of players in the adjacent halls
+                for i in self.players:  # check to see if hallways from the room are blocked
+                    if (
+                        i.location in adj_halls
+                    ):  # looks up the hallways adjacent to room and checks against other player's locations
+                        adj_halls.remove(
+                            i.location
+                        )  # removes hall in player in hall because it is not valid to move to that hall
+                        num += 1
+                if num != max:  # comparing the number of players in adjacent hallways to the number of adjacent hallways
+                    moves.append("Move To Hallway")
+                    options["Hallways"] = adj_halls
+                if self.current_player.location in self.corner_rooms:
+                    moves.append("Take Secret Passageway and Suggest")
+                    if self.current_player.location == "Study":
+                        options["Rooms_Passageway"] = "Kitchen"
+                    elif self.current_player.location == "Kitchen":
+                        options["Rooms_Passageway"] = "Study"
+                    elif self.current_player.location == "Lounge":
+                        options["Rooms_Passageway"] = "Conversatory"
+                    elif self.current_player.location == "Conversatory":
+                        options["Rooms_Passageway"] = "Lounge"
+                if self.current_player.moved == True:  # if player was moved to a room by another player via suggestion
+                    moves.append("Suggest")  # stay in room and suggest
+                return moves, options
 
     # used by suggest function to determine who should disprove the suggestion next
     # used by execute move to reset current player, current is a player object
@@ -266,19 +274,19 @@ class GameController:
         num = 0
         while num < (len(self.players) - 1):
             if suggestion.get("suspect") in self.next_player(next).cards:
-                disapproval.append(suggestion.get("suspect"))
+                disapproval_lst.append(suggestion.get("suspect"))
             if suggestion.get("room") in self.next_player(next).cards:
-                disapproval.append(suggestion.get("room"))
+                disapproval_lst.append(suggestion.get("room"))
             if suggestion.get("weapon") in self.next_player(next).cards:
-                disapproval.append(suggestion.get("weapon"))
-            if len(disapproval) != 0:  # if player can disapprove suggestion, break loop
+                disapproval_lst.append(suggestion.get("weapon"))
+            if len(disapproval_lst) != 0:  # if player can disapprove suggestion, break loop
                 break
             next = self.next_player(next)  # moves to the next player
             num += 1
         # print(next.character)
-        # print(disapproval)
+        # print(disapproval_lst)
 
-        return next, disapproval  # returns player who disapproved and cards to disapprove, needs to go to another class
+        return next, disapproval_lst  # returns player who disapproved and cards to disapprove, needs to go to another class
 
     # handles the suggestion logic after a player selected their move, called during execute_move
     # suggestion is assumed to be in a dict specified above: {suspect:option_clicked, weapon:option_clicked, room:char_current_room}
@@ -290,7 +298,8 @@ class GameController:
                 i.set_moved(True)
                 i.set_in_room(True)
                 break
-        self.disapprove_suggestion(suggestion)
+        n, d_lst = self.disapprove_suggestion(suggestion)
+        return n, d_lst
 
     # handles the accusation logic after a player selected their move, called during execute_move, returns true/false if accusation is correct
     def accuse(self, accusation):
@@ -308,99 +317,110 @@ class GameController:
     # suggestion is also needed by the suggest() function
     def execute_move(self, move: str, option: str, chat_database, suggestion: Dict = None):
         correct = None
-        if move == "Take Secret Passageway and Suggest":  # game state updated
-            self.current_player.set_location(option)
-            self.current_player.set_in_room(True)
-            self.current_player.set_in_corner_room(True)
-            self.suggest(suggestion)
-
-            # Store and display msg
-            passageway_dest = option
-            characterName = self.current_player.character
-            weapon = suggestion["weapon"]
-            suspect = suggestion["suspect"]
-            room = suggestion["room"]
-            log_msg = f"{characterName} takes secret passageway into {passageway_dest} and suggested [{weapon}, {suspect}, {room}]."
-            chat_database.store_chat_message(characterName, move, log_msg)
-
-        if move == "Move To Room and Suggest":
-            self.current_player.set_location(option)
-            self.current_player.set_in_room(True)
-            if option in self.corner_rooms:
+        if self.disapproval:
+            self.disapproval = False
+            self.disappoval_cards = []
+            self.temp_current_player = None
+        else:
+            if move == "Take Secret Passageway and Suggest":  # game state updated
+                self.current_player.set_location(option)
+                self.current_player.set_in_room(True)
                 self.current_player.set_in_corner_room(True)
-            else:
+                temp, d_lst = self.suggest(suggestion)
+                self.disapproval(True)
+
+                # Store and display msg
+                passageway_dest = option
+                characterName = self.current_player.character
+                weapon = suggestion["weapon"]
+                suspect = suggestion["suspect"]
+                room = suggestion["room"]
+                log_msg = f"{characterName} takes secret passageway into {passageway_dest} and suggested [{weapon}, {suspect}, {room}]."
+                chat_database.store_chat_message(characterName, move, log_msg)
+
+            if move == "Move To Room and Suggest":
+                self.current_player.set_location(option)
+                self.current_player.set_in_room(True)
+                if option in self.corner_rooms:
+                    self.current_player.set_in_corner_room(True)
+                else:
+                    self.current_player.set_in_corner_room(False)
+                temp, d_lst = self.suggest(suggestion)
+                self.disapproval(True)
+
+
+                # Store and display msg
+                passageway_dest = option
+                characterName = self.current_player.character
+                weapon = suggestion["weapon"]
+                suspect = suggestion["suspect"]
+                room = suggestion["room"]
+                log_msg = f"{characterName} moves into {passageway_dest} and suggested [{weapon}, {suspect}, {room}]."
+                chat_database.store_chat_message(characterName, move, log_msg)
+
+            if move == "Move To Hallway":
+                self.current_player.set_location(option)
+                self.current_player.set_in_room(False)
                 self.current_player.set_in_corner_room(False)
-            self.suggest(suggestion)
 
-            # Store and display msg
-            passageway_dest = option
-            characterName = self.current_player.character
-            weapon = suggestion["weapon"]
-            suspect = suggestion["suspect"]
-            room = suggestion["room"]
-            log_msg = f"{characterName} moves into {passageway_dest} and suggested [{weapon}, {suspect}, {room}]."
-            chat_database.store_chat_message(characterName, move, log_msg)
+                # Store and display msg
+                characterName = self.current_player.character
+                hallway = option
+                log_msg = f"{characterName} moves into hallway {hallway}."
+                chat_database.store_chat_message(characterName, move, log_msg)
 
-        if move == "Move To Hallway":
-            self.current_player.set_location(option)
-            self.current_player.set_in_room(False)
-            self.current_player.set_in_corner_room(False)
+            if move == "Suggest":
+                self.current_player.set_moved(False)
+                self.current_player.set_in_room(True)
+                if option in self.corner_rooms:
+                    self.current_player.set_in_corner_room(True)
+                else:
+                    self.current_player.set_in_corner_room(False)
+                temp, d_lst = self.suggest(suggestion)
+                self.disapproval(True)
 
-            # Store and display msg
-            characterName = self.current_player.character
-            hallway = option
-            log_msg = f"{characterName} moves into hallway {hallway}."
-            chat_database.store_chat_message(characterName, move, log_msg)
+                # Store and display msg
+                characterName = self.current_player.character
+                weapon = suggestion["weapon"]
+                suspect = suggestion["suspect"]
+                room = suggestion["room"]
+                log_msg = f"{characterName} suggests [{weapon}, {suspect}, {room}]."
+                chat_database.store_chat_message(characterName, move, log_msg)
 
-        if move == "Suggest":
-            self.current_player.set_moved(False)
-            self.current_player.set_in_room(True)
-            if option in self.corner_rooms:
-                self.current_player.set_in_corner_room(True)
-            else:
-                self.current_player.set_in_corner_room(False)
-            self.suggest(suggestion)
+            if move == "Pass":
+                # Store and display msg
+                characterName = self.current_player.character
+                log_msg = f"{characterName} passed."
+                chat_database.store_chat_message(characterName, move, log_msg)
 
-            # Store and display msg
-            characterName = self.current_player.character
-            weapon = suggestion["weapon"]
-            suspect = suggestion["suspect"]
-            room = suggestion["room"]
-            log_msg = f"{characterName} suggests [{weapon}, {suspect}, {room}]."
-            chat_database.store_chat_message(characterName, move, log_msg)
+            if move == "Accuse":
+                characterName = self.current_player.character
 
-        if move == "Pass":
-            # Store and display msg
-            characterName = self.current_player.character
-            log_msg = f"{characterName} passed."
-            chat_database.store_chat_message(characterName, move, log_msg)
+                # Store and display msg
+                characterName = self.current_player.character
+                weapon = suggestion["weapon"]
+                suspect = suggestion["suspect"]
+                room = suggestion["room"]
+                log_msg1 = f"{characterName} accuses [{room}, {suspect}, {weapon}]."
 
-        if move == "Accuse":
-            characterName = self.current_player.character
+                correct = self.accuse(suggestion)  # if accusation is correct
+                if correct:
+                    log_msg2 = f"{characterName} wins!"
+                else:
+                    log_msg2 = f"{characterName}'s accusation was wrong. They're out of the game."
+                    loser = self.current_player
+                    self.players.remove(loser)
+                    self.current_player = self.next_player(self.current_player)
+                    self.turn_order.remove(loser.id)
 
-            # Store and display msg
-            characterName = self.current_player.character
-            weapon = suggestion["weapon"]
-            suspect = suggestion["suspect"]
-            room = suggestion["room"]
-            log_msg1 = f"{characterName} accuses [{room}, {suspect}, {weapon}]."
-
-            correct = self.accuse(suggestion)  # if accusation is correct
-            if correct:
-                log_msg2 = f"{characterName} wins!"
-            else:
-                log_msg2 = f"{characterName}'s accusation was wrong. They're out of the game."
-                loser = self.current_player
-                self.players.remove(loser)
-                self.current_player = self.next_player(self.current_player)
-                self.turn_order.remove(loser.id)
-
-            chat_database.store_chat_message(characterName, move, log_msg1)
-            chat_database.store_chat_message(characterName, move, log_msg2)
+                chat_database.store_chat_message(characterName, move, log_msg1)
+                chat_database.store_chat_message(characterName, move, log_msg2)
 
         # set next current player as the turn is complete, if "Pass" is chosen, current_player is reset as well
-        if correct == None:
+        if correct == None and self.disapproval == False:
             self.current_player = self.next_player(self.current_player)
+        else:
+            self.temp_current_player = temp #for disapproval logic
 
         # calls valid moves to start next turn
         # self.valid_moves()
