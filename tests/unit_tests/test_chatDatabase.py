@@ -127,7 +127,7 @@ def test_get_chatDisplay_messages():
         "message": "test message",
     }
 
-    for _ in range(0,8):
+    for _ in range(0, 8):
         message = test_message.copy()
         testdb.chatMessages.insert_one(message)
 

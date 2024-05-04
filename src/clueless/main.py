@@ -7,11 +7,13 @@ from GameController import *
 import pygame
 import socket
 from debug import debug
+
 environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 
 # Set colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+
 
 class Client:
     def __init__(self):
@@ -25,9 +27,19 @@ class Client:
         self.server = "localhost"
         self.port = 5555
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.available_suspects = [
+            "Miss Scarlet",
+            "Col. Mustard",
+            "Mrs. White",
+            "Mr. Green",
+            "Mrs. Peacock",
+            "Professor Plum",
+        ]
+        self.available_weapons = ["Candlestick", "Wrench", "Knife", "Revolver", "Rope", "Lead Pipe"]
 
         # Tracks all buttons
         self.buttons = []
+        self.buttons2 = []
         self.buttons_options = []
 
         try:
@@ -45,7 +57,7 @@ class Client:
     # def clear_server_msgs(self):
     #     while self.s.recv(1024):
     #         pass
-    
+
     def check_turn(self):
         self.s.send("get_current_turn".encode())
         server_msg = self.s.recv(1024).decode("utf-8")
@@ -53,8 +65,8 @@ class Client:
         return server_msg == self.character
 
     def main_menu(self):
-        print("Start of main_menu function")  # Debug print
-        
+        # print("Start of main_menu function")  # Debug print
+
         # Display the main menu UI
         font = pygame.font.Font("freesansbold.ttf", 32)
         text = font.render("Welcome! Please select a character:", True, WHITE, BLACK)
@@ -81,7 +93,7 @@ class Client:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    print("Quit event detected")  # Debug print
+                    # print("Quit event detected")  # Debug print
                     running = False
                     pygame.quit()
                     sys.exit(0)
@@ -103,7 +115,7 @@ class Client:
 
     def lobby(self, character):
         print("Start of lobby scene")
-        
+
         self.character = character
 
         # Display the character assignment UI
@@ -137,7 +149,7 @@ class Client:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     if start_button.check_button(mouse_x, mouse_y):
                         self.s.send("start_game".encode())
-                        print("Start game message sent to server")  # Debug print
+                        # print("Start game message sent to server")  # Debug print
                         running = False
 
                         # Clear main menu buttons
@@ -150,18 +162,21 @@ class Client:
                 pygame.display.update()
 
     def main_game(self):
-        print("Start of main gameplay scene")
+        # print("Start of main gameplay scene")
         pygame.init()
+        self.buttons = []
 
+        """
+        Initializing game objects
+        """
         # Initialize screen
         self.screen = pygame.display.set_mode((self.gameUI.screen_width, self.gameUI.screen_height), pygame.RESIZABLE)
         clock = pygame.time.Clock()
-        curr_move = None
 
         # Initializing game board
         self.s.send("get_current_players".encode())
         server_msg = self.s.recv(1024).decode("utf-8")
-        print(f"Message received: {server_msg}")
+        # print(f"Message received: {server_msg}")
         locations = ast.literal_eval(server_msg)
         game_board = GameBoard(self.gameUI, locations)
 
@@ -182,17 +197,23 @@ class Client:
 
         pygame.display.update()
 
+        """
+        Game loop
+        """
         # Keep track of game status and if a move button has been clicked
         running = True
+        buttons1_showed = False
         options_showed = False
-        #locations = None
-      
+        show_options_button = False
+
         # Game loop
         while running:
             # Check whether it is current player's turn
             is_turn = self.check_turn()
-            self.buttons = []
 
+            """
+            Rendering game graphics
+            """
             # Draw four sections
             pygame.draw.rect(self.screen, BLACK, game_board_rect)
             pygame.draw.rect(self.screen, BLACK, chat_display_rect)
@@ -216,18 +237,30 @@ class Client:
             server_msg = self.s.recv(1024).decode("utf-8")
             valid_moves = ast.literal_eval(server_msg.split(";")[0])
             options = ast.literal_eval(server_msg.split(";")[1])
-            #print(f"Valid moves: {valid_moves}; Options: {options}")
+            # print(f"Valid moves: {valid_moves}; Options: {options}")
 
             # Get recent log messages from chatDatabase and display in-game
             self.s.send("get_game_logs".encode())
             server_msg = self.s.recv(1024).decode("utf-8")
             log_msgs = ast.literal_eval(server_msg)
-            chat_display = chatDisplay(chat_display_rect, self.screen, chat_display_rect.x + chat_display_rect.width // 2, chat_display_rect.y + chat_display_rect.height // 2, log_msgs)
+            chat_display = chatDisplay(
+                chat_display_rect,
+                self.screen,
+                chat_display_rect.x + chat_display_rect.width // 2,
+                chat_display_rect.y + chat_display_rect.height // 2,
+                log_msgs,
+            )
             chat_display.display_chat_messages()
 
+            """
+            Rendering moves buttons
+            """
+            # LAYER 1.1: Render available moves button
+            if not buttons1_showed and not options_showed and is_turn:
+                # Start afresh
+                self.buttons = []
+                self.buttons2 = []
 
-            # Render available moves button
-            if not options_showed and is_turn:
                 start_x = 900
                 start_y = 500
                 for move in valid_moves:
@@ -242,13 +275,27 @@ class Client:
                 for button in self.buttons:
                     button.draw_button()
 
-            # Render available options button after a move is selected
-            elif options_showed and is_turn:
+            # LAYER 1.2: Render buttons2 if LAYER 1.1 is already showed
+            if buttons1_showed and not options_showed and is_turn:
+                # Reset to avoid overlapping button coordinates
+                self.buttons = []
+
+                for button in self.buttons2:
+                    button.draw_button()
+
+            # LAYER 2: Render available options button after a move is selected
+            if options_showed and is_turn:
+                # Reset to avoid overlapping button coordinates
+                self.buttons = []
+                self.buttons2 = []
+
                 for button in self.buttons_options:
                     button.draw_button()
-            
+
+                show_options_button = True
+
             # If it isn't the player's turn, display a message to wait
-            else:
+            elif not is_turn:
                 start_x = 800
                 start_y = 550
                 position = (start_x, start_y)
@@ -258,43 +305,51 @@ class Client:
                 text = font.render("Wait Your Turn", 1, BLACK)
                 # Draw the text on the screen
                 self.screen.blit(text, position)
-                
+
+            """
+            Button click responses
+            """
             for event in pygame.event.get():
                 # Quit event
                 if event.type == pygame.QUIT:
-                    print("Quit event detected")
                     running = False
                     pygame.quit()
                     sys.exit(0)
 
                 # Button clicks
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    print("Mouse click registered")
                     # Position of cursor
                     mouse_x, mouse_y = pygame.mouse.get_pos()
 
-                    # Find button that matches cursor coordinates
+                    # Moves button is clicked and next layer of buttons is called on
                     for button in self.buttons:
                         if button.check_button(mouse_x, mouse_y):
                             # Move button is clicked
                             if button.command_function == "show_options":
-                                available_options = []
-                                options_showed = True
-                                curr_move = button.msg
-
                                 # Extract options based on move clicked
                                 if button.msg == "Move To Hallway":
-                                    print("Move to Hallway registered")
-                                    available_options.extend(options["Hallways"])
+                                    options_showed = True
 
-                                elif button.msg == "Move To Room and Suggest":
-                                    available_options.extend(options["Rooms"])
-                                    print("Move to Room and Suggest registered")
+                                    # Initialize available options buttons
+                                    start_x = 900
+                                    start_y = 500
+                                    for option in options["Hallways"]:
+                                        self.buttons_options.append(
+                                            Button(
+                                                self.screen,
+                                                player_options.screen_color,
+                                                option,
+                                                start_x,
+                                                start_y,
+                                                f"execute_move;{button.msg}",
+                                                BLACK,
+                                            )
+                                        )
+                                        start_y += 50
 
                                 elif button.msg == "Pass":
                                     # Execute option move
                                     self.s.send("execute_move;Pass; ".encode())
-                                    print("Pass registered")
 
                                     # Obtain updated players locations
                                     self.s.send("get_current_players".encode())
@@ -304,57 +359,151 @@ class Client:
 
                                     # Reinitialize graphics for next player
                                     game_board = GameBoard(self.gameUI, locations)
+                                    self.buttons = []
+                                    self.buttons2 = []
                                     self.buttons_options = []
                                     options_showed = False
+                                    buttons1_showed = False
 
-                                # Initialize available options buttons
-                                start_x = 900
-                                start_y = 500
-                                for option in available_options:
-                                    self.buttons_options.append(
-                                        Button(
-                                            self.screen,
-                                            player_options.screen_color,
-                                            option,
-                                            start_x,
-                                            start_y,
-                                            "execute_move",
-                                            BLACK,
+                                elif button.msg == "Move To Room and Suggest":
+                                    # Reset buttons to avoid rendering move buttons
+                                    self.buttons = []
+                                    buttons1_showed = True
+
+                                    # Initialize room buttons
+                                    start_x = 900
+                                    start_y = 500
+                                    for room in options["Rooms"]:
+                                        self.buttons2.append(
+                                            Button(
+                                                self.screen,
+                                                player_options.screen_color,
+                                                room,
+                                                start_x,
+                                                start_y,
+                                                f"show_suggest_suspects;{button.msg};{room}",
+                                                BLACK,
+                                            )
                                         )
-                                    )
-                                    start_y += 50
+                                        start_y += 50
 
                             # For start button
                             else:
                                 self.s.send(f"{button.command_function};{button.msg}".encode())
                                 print(f"{button.command_function}{button.msg} selection sent to server")  # Debug print
 
-                    # Options button is clicked
-                    for button in self.buttons_options:
+                    # Moves button is clicked and moves2 buttons are called on
+                    for button in self.buttons2:
                         if button.check_button(mouse_x, mouse_y):
-                            # Execute option move
-                            self.s.send(f"{button.command_function};{curr_move};{button.msg}".encode())
-                            
-                            # Obtain updated players locations
-                            self.s.send("get_current_players".encode())
-                            server_msg = self.s.recv(1024).decode("utf-8")
-                            locations = ast.literal_eval(server_msg)
-                            game_board.draw(self.screen.subsurface(game_board_rect), locations)
+                            if button.command_function.startswith("show_suggest_suspects"):
+                                # Reset buttons to avoid rendering move buttons
+                                self.buttons = []
+                                self.buttons2 = []
 
-                            # Reinitialize graphics for next player
-                            game_board = GameBoard(self.gameUI, locations)
-                            self.buttons_options = []
-                            options_showed = False
+                                move = button.command_function.split(";")[1]
+                                room = button.command_function.split(";")[2]
+
+                                # Initialize suspects buttons
+                                start_x = 900
+                                start_y = 500
+                                for suspect in self.available_suspects:
+                                    self.buttons2.append(
+                                        Button(
+                                            self.screen,
+                                            player_options.screen_color,
+                                            suspect,
+                                            start_x,
+                                            start_y,
+                                            f"show_suggest_weapons;{move};{room}",
+                                            BLACK,
+                                        )
+                                    )
+                                    start_y += 50
+
+                            elif button.command_function.startswith("show_suggest_weapons"):
+                                options_showed = True
+                                buttons1_showed = True
+
+                                # Reset buttons to avoid rendering move buttons
+                                self.buttons = []
+                                self.buttons2 = []
+                                self.buttons_options = []
+
+                                move_selected = button.command_function.split(";")[1]
+                                room = button.command_function.split(";")[2]
+                                suspect_selected = button.msg
+
+                                # Initialize weapons buttons
+                                start_x = 900
+                                start_y = 500
+                                for weapon in self.available_weapons:
+                                    self.buttons_options.append(
+                                        Button(
+                                            self.screen,
+                                            player_options.screen_color,
+                                            weapon,
+                                            start_x,
+                                            start_y,
+                                            f"execute_with_suggestion;{move_selected};{room};{suspect_selected};{weapon}",
+                                            BLACK,
+                                        )
+                                    )
+                                    start_y += 50
+
+                    # Options button is clicked and execute move is called on
+                    if show_options_button:
+                        for button in self.buttons_options:
+                            if button.check_button(mouse_x, mouse_y):
+                                # Include suggestion msg for suggest moves
+                                if button.command_function.startswith("execute_with_suggestion"):
+                                    # Execute option move
+                                    self.s.send(button.command_function.encode())
+
+                                    # Obtain updated players locations
+                                    self.s.send("get_current_players".encode())
+                                    server_msg = self.s.recv(1024).decode("utf-8")
+                                    locations = ast.literal_eval(server_msg)
+                                    game_board.draw(self.screen.subsurface(game_board_rect), locations)
+
+                                    # Reinitialize graphics for next player
+                                    game_board = GameBoard(self.gameUI, locations)
+                                    options_showed = False
+                                    buttons1_showed = False
+                                    show_options_button = False
+                                    self.buttons = []
+                                    self.buttons2 = []
+                                    self.buttons_options = []
+
+                                # Do not include suggestion for other moves
+                                elif button.command_function.startswith("execute_move"):
+                                    # Execute option move
+                                    self.s.send(f"{button.command_function};{button.msg}".encode())
+
+                                    # Obtain updated players locations
+                                    self.s.send("get_current_players".encode())
+                                    server_msg = self.s.recv(1024).decode("utf-8")
+                                    locations = ast.literal_eval(server_msg)
+                                    game_board.draw(self.screen.subsurface(game_board_rect), locations)
+
+                                    # Reinitialize graphics for next player
+                                    game_board = GameBoard(self.gameUI, locations)
+                                    options_showed = False
+                                    buttons1_showed = False
+                                    show_options_button = False
+                                    self.buttons = []
+                                    self.buttons2 = []
+                                    self.buttons_options = []
 
             if running:
                 pygame.display.update()
 
             # Refresh screen
-            #pygame.display.flip()
+            # pygame.display.flip()
             clock.tick(30)  # Limit to 30 frames per second
 
         pygame.quit()
 
 
 if __name__ == "__main__":
+
     client = Client()

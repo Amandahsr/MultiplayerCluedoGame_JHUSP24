@@ -2,6 +2,7 @@ import os
 from os import environ
 from typing import Dict, List
 import pygame
+
 environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 
 
@@ -38,7 +39,7 @@ class Button:
         return self.msg
 
     def prep_msg(self, msg):
-        #print(f"msg: {msg}, text_color: {self.text_color}, button_color: {self.button_color}")
+        # print(f"msg: {msg}, text_color: {self.text_color}, button_color: {self.button_color}")
         self.msg_image = self.font.render(msg, True, self.text_color, self.button_color)
         self.msg_image_rect = self.msg_image.get_rect()
         self.msg_image_rect.center = self.rect.center
@@ -139,9 +140,9 @@ class GameBoard:
 
         # Load the game board image
         ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-        gameboard_img_path = os.path.join(ROOT_DIR, 'Gameboard.png')
+        gameboard_img_path = os.path.join(ROOT_DIR, "Gameboard.png")
         original_image = pygame.image.load(gameboard_img_path)
-        
+
         # Set the image dimensions to fit the game board section of the display
         img_width = self.gameUI.screen_width // 2
         img_height = self.gameUI.screen_height // 2
@@ -149,7 +150,6 @@ class GameBoard:
 
     def update_position(self, character, position):
         self.positions[character] = position
-
 
     def display(self):
         for character, position in self.positions.items():
@@ -209,10 +209,8 @@ class GameBoard:
             icon_y = board_location[1] - icon_height / 2
             adjusted_location = (icon_x, icon_y)
 
-            print(f"{character} is at {position}")
             # Draw the character icon at the pixel coordinates
             icon.draw(surface, adjusted_location)
-
 
 
 class CharacterIcon:
@@ -245,7 +243,7 @@ class CharacterIcon:
 
     def draw(self, surface, position):
         # Draw the icon on the screen at the given position
-        print(f"position passed to icon.draw: {position}")
+        # print(f"position passed to icon.draw: {position}")
         surface.blit(self.surface, position)
 
 

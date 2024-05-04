@@ -1,9 +1,10 @@
 from os import environ
-# import pygame
-from player import Player
-from UI import chatDisplay
-# import server
+
 import random
+from typing import Dict
+
+from player import Player
+
 environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 
 """call order: 
@@ -122,7 +123,7 @@ class GameController:
         if character == "Professor Plum":
             p = Player("Professor Plum", "PP_Start", True, 6)
         self.players.append(p)  # adds players to game state
-        print(f"Initialized Players: {', '.join([player.character for player in self.players])}") #Debug statement
+        print(f"Initialized Players: {', '.join([player.character for player in self.players])}")  # Debug statement
         return p
 
     # should be run after every player joins
@@ -161,7 +162,6 @@ class GameController:
         moves.append("Pass")  # every turn a player can pass
         moves.append("Accuse")  # every turn a player can accuse
 
-        print(f"self.current_player.start: {self.current_player.start}")
         # First turn logic
         if self.current_player.location in self.start_pos:  # first move must be to adjacent hallway
             moves.append("Move To Hallway")
@@ -177,7 +177,7 @@ class GameController:
                 options["Hallways"] = ["LC_Hall"]
             elif self.current_player.character == "Professor Plum":
                 options["Hallways"] = ["SL_Hall"]
-            #self.current_player.start == False  # it is not the current player's first move anymore, set to False
+            # self.current_player.start == False  # it is not the current player's first move anymore, set to False
             return moves, options
 
         # Move to Room from Hallway
@@ -210,7 +210,7 @@ class GameController:
             return moves, options
 
         # Move to hallway from room, take secret passageway, and stay in room (if moved) and suggest
-        if self.current_player.in_room == True:
+        if self.current_player.location in self.rooms:
             num = 0
             adj_halls = self.board.get(self.current_player.location)  # adjacent hallways
             print(adj_halls)
@@ -273,32 +273,39 @@ class GameController:
                 break
             next = self.next_player(next)  # moves to the next player
             num += 1
-        print(next.character)
-        print(disapproval)
+        # print(next.character)
+        # print(disapproval)
 
         return next, disapproval  # returns player who disapproved and cards to disapprove, needs to go to another class
 
     # handles the suggestion logic after a player selected their move, called during execute_move
-    # suggestion is assumed to be in a dict specified above
+    # suggestion is assumed to be in a dict specified above: {suspect:option_clicked, weapon:option_clicked, room:char_current_room}
     def suggest(self, suggestion):  # need the suggestion from player selection, suggestion is assumed to be a dict
+        print("Suggest is executed.")
         for i in self.players:
             if i.character == suggestion.get("suspect"):
                 i.set_location(suggestion.get("room"))
                 i.set_moved(True)
+                i.set_in_room(True)
                 break
         self.disapprove_suggestion(suggestion)
 
-    # handles the accusation logic after a player selected their move, called during execute_move
-    def accuse(self):
-        # needs to be implemented
-        return None
+    # handles the accusation logic after a player selected their move, called during execute_move, returns true/false if accusation is correct
+    def accuse(self, accusation):
+        if accusation.get("suspect") == self.answer.get("suspect"):
+            if accusation.get("weapon") == self.answer.get("weapon"):
+                if accusation.get("room") == self.answer.get("room"):
+                    return True
+        else:
+            return False
 
     # execute move needs the selected move and the option (i.e., which room, hallway, passageway player selected)
     # moves are strings, 6 options shown below:
     # "Take Secret Passageway and Suggest", "Move To Room and Suggest", "Move To Hallway", "Suggest", "Accuse", "Pass"
     # option is whatever the player also selected, for example if move room was selected, the option is the room they selected, use the naming convention in self.rooms
     # suggestion is also needed by the suggest() function
-    def execute_move(self, move, option, chat_database, suggestion=None):
+    def execute_move(self, move: str, option: str, chat_database, suggestion: Dict = None):
+        correct = None
         if move == "Take Secret Passageway and Suggest":  # game state updated
             self.current_player.set_location(option)
             self.current_player.set_in_room(True)
@@ -360,25 +367,31 @@ class GameController:
             log_msg = f"{characterName} suggests [{weapon}, {suspect}, {room}]."
             chat_database.store_chat_message(characterName, move, log_msg)
 
-        if move == "Accuse":
-            self.accuse()
-
-            # Store and display msg
-            characterName = self.current_player.character
-            log_msg = f"{characterName} accuses."
-            chat_database.store_chat_message(characterName, move, log_msg)
-
         if move == "Pass":
             # Store and display msg
             characterName = self.current_player.character
             log_msg = f"{characterName} passed."
             chat_database.store_chat_message(characterName, move, log_msg)
 
+        if move == "Accuse":
+            characterName = self.current_player.character
+            self.chat_msg = f"{characterName} accuses."
+            correct = self.accuse(suggestion)  # if accusation is correct
+            if correct:
+                self.chat_msg = f"{characterName} wins!"
+            else:
+                self.chat_msg = f"{characterName}'s accusation was wrong. They're out of the game."
+                loser = self.current_player
+                self.players.remove(loser)
+                self.current_player = self.next_player(self.current_player)
+                self.turn_order.remove(loser.id)
+
         # set next current player as the turn is complete, if "Pass" is chosen, current_player is reset as well
-        self.current_player = self.next_player(self.current_player)
+        if correct == None:
+            self.current_player = self.next_player(self.current_player)
 
         # calls valid moves to start next turn
-        #self.valid_moves()
+        # self.valid_moves()
 
 
 """g = GameController()
