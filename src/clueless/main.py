@@ -36,6 +36,17 @@ class Client:
             "Professor Plum",
         ]
         self.available_weapons = ["Candlestick", "Wrench", "Knife", "Revolver", "Rope", "Lead Pipe"]
+        self.available_rooms = [
+            "Study",
+            "Hall",
+            "Lounge",
+            "Library",
+            "Billiard",
+            "Dining",
+            "Conversatory",
+            "Ballroom",
+            "Kitchen",
+        ]
 
         # Tracks all buttons
         self.buttons = []
@@ -204,6 +215,7 @@ class Client:
         running = True
         buttons1_showed = False
         options_showed = False
+        show_buttons2_button = False
         show_options_button = False
 
         # Game loop
@@ -282,6 +294,8 @@ class Client:
 
                 for button in self.buttons2:
                     button.draw_button()
+
+                show_buttons2_button = True
 
             # LAYER 2: Render available options button after a move is selected
             if options_showed and is_turn:
@@ -364,6 +378,7 @@ class Client:
                                     self.buttons_options = []
                                     options_showed = False
                                     buttons1_showed = False
+                                    show_buttons2_button = False
 
                                 elif button.msg == "Move To Room and Suggest":
                                     # Reset buttons to avoid rendering move buttons
@@ -387,68 +402,93 @@ class Client:
                                         )
                                         start_y += 50
 
+                                elif button.msg == "Accuse":
+                                    # Reset buttons to avoid rendering move buttons
+                                    self.buttons = []
+                                    self.buttons2 = []
+                                    buttons1_showed = True
+                                    options_showed = False
+
+                                    # Initialize room buttons
+                                    start_x = 900
+                                    start_y = 500
+                                    for room in self.available_rooms:
+                                        self.buttons2.append(
+                                            Button(
+                                                self.screen,
+                                                player_options.screen_color,
+                                                room,
+                                                start_x,
+                                                start_y,
+                                                f"show_suggest_suspects;{button.msg};{room}",
+                                                BLACK,
+                                            )
+                                        )
+                                        start_y += 50
+
                             # For start button
                             else:
                                 self.s.send(f"{button.command_function};{button.msg}".encode())
                                 print(f"{button.command_function}{button.msg} selection sent to server")  # Debug print
 
                     # Moves button is clicked and moves2 buttons are called on
-                    for button in self.buttons2:
-                        if button.check_button(mouse_x, mouse_y):
-                            if button.command_function.startswith("show_suggest_suspects"):
-                                # Reset buttons to avoid rendering move buttons
-                                self.buttons = []
-                                self.buttons2 = []
+                    if show_buttons2_button:
+                        for button in self.buttons2:
+                            if button.check_button(mouse_x, mouse_y):
+                                if button.command_function.startswith("show_suggest_suspects"):
+                                    # Reset buttons to avoid rendering move buttons
+                                    self.buttons = []
+                                    self.buttons2 = []
 
-                                move = button.command_function.split(";")[1]
-                                room = button.command_function.split(";")[2]
+                                    move = button.command_function.split(";")[1]
+                                    room = button.command_function.split(";")[2]
 
-                                # Initialize suspects buttons
-                                start_x = 900
-                                start_y = 500
-                                for suspect in self.available_suspects:
-                                    self.buttons2.append(
-                                        Button(
-                                            self.screen,
-                                            player_options.screen_color,
-                                            suspect,
-                                            start_x,
-                                            start_y,
-                                            f"show_suggest_weapons;{move};{room}",
-                                            BLACK,
+                                    # Initialize suspects buttons
+                                    start_x = 900
+                                    start_y = 500
+                                    for suspect in self.available_suspects:
+                                        self.buttons2.append(
+                                            Button(
+                                                self.screen,
+                                                player_options.screen_color,
+                                                suspect,
+                                                start_x,
+                                                start_y,
+                                                f"show_suggest_weapons;{move};{room}",
+                                                BLACK,
+                                            )
                                         )
-                                    )
-                                    start_y += 50
+                                        start_y += 50
 
-                            elif button.command_function.startswith("show_suggest_weapons"):
-                                options_showed = True
-                                buttons1_showed = True
+                                elif button.command_function.startswith("show_suggest_weapons"):
+                                    options_showed = True
+                                    buttons1_showed = True
 
-                                # Reset buttons to avoid rendering move buttons
-                                self.buttons = []
-                                self.buttons2 = []
-                                self.buttons_options = []
+                                    # Reset buttons to avoid rendering move buttons
+                                    self.buttons = []
+                                    self.buttons2 = []
+                                    self.buttons_options = []
 
-                                move_selected = button.command_function.split(";")[1]
-                                room = button.command_function.split(";")[2]
-                                suspect_selected = button.msg
+                                    move_selected = button.command_function.split(";")[1]
+                                    room = button.command_function.split(";")[2]
+                                    suspect_selected = button.msg
 
-                                # Initialize weapons buttons
-                                start_x = 900
-                                start_y = 500
-                                for weapon in self.available_weapons:
-                                    self.buttons_options.append(
-                                        Button(
-                                            self.screen,
-                                            player_options.screen_color,
-                                            weapon,
-                                            start_x,
-                                            start_y,
-                                            f"execute_with_suggestion;{move_selected};{room};{suspect_selected};{weapon}",
-                                            BLACK,
+                                    # Initialize weapons buttons
+                                    start_x = 900
+                                    start_y = 500
+                                    for weapon in self.available_weapons:
+                                        self.buttons_options.append(
+                                            Button(
+                                                self.screen,
+                                                player_options.screen_color,
+                                                weapon,
+                                                start_x,
+                                                start_y,
+                                                f"execute_with_suggestion;{move_selected};{room};{suspect_selected};{weapon}",
+                                                BLACK,
+                                            )
                                         )
-                                    )
-                                    start_y += 50
+                                        start_y += 50
 
                     # Options button is clicked and execute move is called on
                     if show_options_button:
@@ -470,6 +510,7 @@ class Client:
                                     options_showed = False
                                     buttons1_showed = False
                                     show_options_button = False
+                                    show_buttons2_button = False
                                     self.buttons = []
                                     self.buttons2 = []
                                     self.buttons_options = []
@@ -490,6 +531,7 @@ class Client:
                                     options_showed = False
                                     buttons1_showed = False
                                     show_options_button = False
+                                    show_buttons2_button = False
                                     self.buttons = []
                                     self.buttons2 = []
                                     self.buttons_options = []
