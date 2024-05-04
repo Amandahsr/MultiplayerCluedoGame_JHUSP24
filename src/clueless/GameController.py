@@ -288,10 +288,14 @@ class GameController:
                 break
         self.disapprove_suggestion(suggestion)
 
-    # handles the accusation logic after a player selected their move, called during execute_move
-    def accuse(self):
-        # needs to be implemented
-        return None
+    # handles the accusation logic after a player selected their move, called during execute_move, returns true/false if accusation is correct
+    def accuse(self, accusation):
+        if accusation.get('suspect') == self.answer.get('suspect'):
+            if accusation.get('weapon') == self.answer.get('weapon'):
+                if accusation.get('room') == self.answer.get('room'):
+                    return True  
+        else:
+            return False
 
     # execute move needs the selected move and the option (i.e., which room, hallway, passageway player selected)
     # moves are strings, 6 options shown below:
@@ -360,22 +364,28 @@ class GameController:
             log_msg = f"{characterName} suggests [{weapon}, {suspect}, {room}]."
             chat_database.store_chat_message(characterName, move, log_msg)
 
-        if move == "Accuse":
-            self.accuse()
-
-            # Store and display msg
-            characterName = self.current_player.character
-            log_msg = f"{characterName} accuses."
-            chat_database.store_chat_message(characterName, move, log_msg)
-
         if move == "Pass":
             # Store and display msg
             characterName = self.current_player.character
             log_msg = f"{characterName} passed."
             chat_database.store_chat_message(characterName, move, log_msg)
 
+        if move == "Accuse":
+            characterName = self.current_player.character
+            self.chat_msg = f"{characterName} accuses."
+            correct = self.accuse(suggestion) #if accusation is correct
+            if correct:
+                self.chat_msg = f"{characterName} wins!"
+            else:
+                self.chat_msg = f"{characterName}'s accusation was wrong. They're out of the game."
+                loser = self.current_player
+                self.players.remove(loser)
+                self.current_player = self.next_player(self.current_player)
+                self.turn_order.remove(loser.id)
+
         # set next current player as the turn is complete, if "Pass" is chosen, current_player is reset as well
-        self.current_player = self.next_player(self.current_player)
+        if correct == None:
+            self.current_player = self.next_player(self.current_player)
 
         # calls valid moves to start next turn
         #self.valid_moves()
