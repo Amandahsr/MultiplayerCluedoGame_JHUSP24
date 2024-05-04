@@ -148,10 +148,18 @@ class Client:
             self.screen.blit(text, textRect)
             self.screen.blit(character_text, characterRect)
             
+            # Draw start button if there are at least 3 players
             self.s.send("get_num_players".encode())
             num_players = int(self.s.recv(1024).decode("utf-8"))
             if num_players >= 3:
                 start_button.draw_button()
+
+            self.s.send("check_start".encode())
+            server_msg = self.s.recv(1024).decode("utf-8")
+            if server_msg == "true, start game":
+                running = False
+                self.buttons = []
+                self.main_game()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

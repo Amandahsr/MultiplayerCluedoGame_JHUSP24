@@ -99,6 +99,12 @@ try:
                         message = f"It is {current_player}'s turn, please wait for a move to be executed..."
                         chat_database.store_chat_message(current_player, "Player Turn", message)
 
+                    elif reply.startswith("check_start"):
+                        if game_controller.initialized:
+                            conn.send(str.encode("true, start game"))
+                        else:
+                            conn.send(str.encode("game not started yet"))
+
                     elif reply.startswith("valid_moves"):
                         valid_moves, options = game_controller.valid_moves()
                         conn.send(str.encode(f"{str(valid_moves)};{str(options)}"))
