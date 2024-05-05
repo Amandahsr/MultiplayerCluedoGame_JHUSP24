@@ -149,23 +149,35 @@ from textwrap import wrap
 
 class chatDatabase:
     def __init__(self) -> None:
-        self.log_msgs = []
+        self.characters = ["Miss Scarlet", "Col. Mustard", "Mrs. White", "Mr. Green", "Mrs. Peacock", "Professor Plum"]
+        self.log_msgs = {
+            "Miss Scarlet": [],
+            "Col. Mustard": [],
+            "Mrs. White": [],
+            "Mr. Green": [],
+            "Mrs. Peacock": [],
+            "Professor Plum": [],
+        }
 
-    def get_chatDisplay_messages(self) -> List[str]:
+    def get_chatDisplay_messages(self, characterName: str) -> List[str]:
         """
         Returns most recent 5 messages stored in the database for in-game log display.
         """
+        log_msgs = self.log_msgs[characterName]
+
         # Return most recent 5
-        log_msgs = [f"{msg['message_time']}: {msg['message']}" for msg in self.log_msgs][-5:]
+        recent_msgs = [f"{msg['message_time']}: {msg['message']}" for msg in log_msgs][-5:]
 
-        return log_msgs
+        return recent_msgs
 
-    def get_recent_5_messages(self) -> List[str]:
+    def get_recent_5_messages(self, characterName: str) -> List[str]:
         """
         Returns most recent 5 messages stored in the database for in-game log display.
         """
+        log_msgs = self.log_msgs[characterName]
+
         # Return most recent 5
-        msgs = [msg["message"] for msg in self.log_msgs][-5:]
+        msgs = [msg["message"] for msg in log_msgs][-5:]
 
         return msgs
 
@@ -174,28 +186,34 @@ class chatDatabase:
         character_Name: str,
         game_state_category: str,
         message: str,
+        targeted: List[str] = None,
     ) -> str:
         """
-        Stores a chat system message in the database.
+        Stores a chat system message in the database. targeted flag allows you to store chat message in specified character logs only.
         """
-        # Avoid storing duplicated log messages
-        if message in self.get_recent_5_messages():
-            pass
+        # Store in all characters logs if not a targeted message
+        if targeted is None:
+            targeted = self.characters
 
-        else:
-            t = localtime()
+        for character in targeted:
+            # Avoid storing duplicated log messages
+            if message in self.get_recent_5_messages(character):
+                pass
 
-            # message ID is based on the number of messages
-            msg_ID = len(self.log_msgs) + 1
+            else:
+                t = localtime()
 
-            # Message information that will be stored
-            message_info = {
-                "character_Name": character_Name,
-                "message_ID": msg_ID,
-                "message_time": strftime("%H:%M:%S", t),
-                "game_state_category": game_state_category,
-                "message": message,
-            }
+                # message ID is based on the number of messages
+                msg_ID = len(self.log_msgs) + 1
 
-            # Store message information
-            self.log_msgs.append(message_info)
+                # Message information that will be stored
+                message_info = {
+                    "character_Name": character_Name,
+                    "message_ID": msg_ID,
+                    "message_time": strftime("%H:%M:%S", t),
+                    "game_state_category": game_state_category,
+                    "message": message,
+                }
+
+                # Store message information
+                self.log_msgs[character].append(message_info)

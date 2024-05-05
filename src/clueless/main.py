@@ -295,7 +295,7 @@ class Client:
             # print(f"Valid moves: {valid_moves}; Options: {options}")
 
             # Get recent log messages from chatDatabase and display in-game
-            self.s.send("get_game_logs".encode())
+            self.s.send(f"get_game_logs;{self.character}".encode())
             server_msg = self.s.recv(1024).decode("utf-8")
             log_msgs = ast.literal_eval(server_msg)
             chat_display = chatDisplay(
@@ -472,16 +472,40 @@ class Client:
                                         )
                                         start_y += 50
 
-                            #                                 elif button.msg == "Accuse":
-                            #                                     print("Pressed Accuse button")
-                            #                                     self.s.send("accuse".encode())
-                            #                                     server_msg = self.s.recv(1024).decode("utf-8")
-                            #                                     print(f"Server message: {server_msg}")
-                            #                                     if server_msg.split(":")[0] == "winner":
-                            #                                         winner = server_msg.split(":")[1]
-                            #                                         self.end_game_win(winner)
-                            #                                     else:
-                            #                                         pass
+                                #                                 elif button.msg == "Accuse":
+                                #                                     print("Pressed Accuse button")
+                                #                                     self.s.send("accuse".encode())
+                                #                                     server_msg = self.s.recv(1024).decode("utf-8")
+                                #                                     print(f"Server message: {server_msg}")
+                                #                                     if server_msg.split(":")[0] == "winner":
+                                #                                         winner = server_msg.split(":")[1]
+                                #                                         self.end_game_win(winner)
+                                #                                     else:
+                                #                                         pass
+
+                                elif button.msg == "Disprove":
+                                    # Reset buttons to avoid rendering move buttons
+                                    self.buttons = []
+                                    self.buttons2 = []
+                                    options_showed = True
+                                    buttons1_showed = True
+
+                                    # Initialize disprove options buttons
+                                    start_x = 900
+                                    start_y = 500
+                                    for disprove_selection in options:
+                                        self.buttons_options.append(
+                                            Button(
+                                                self.screen,
+                                                player_options.screen_color,
+                                                disprove_selection,
+                                                start_x,
+                                                start_y,
+                                                f"execute_move;{button.msg}",
+                                                BLACK,
+                                            )
+                                        )
+                                        start_y += 50
 
                             # For start button
                             else:

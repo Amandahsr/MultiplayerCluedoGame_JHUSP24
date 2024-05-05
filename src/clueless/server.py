@@ -53,13 +53,16 @@ try:
                 reply = data.decode("utf-8")
 
                 # Avoid spamming server with these messages
-                if not reply in [
-                    "get_current_turn",
-                    "get_game_logs",
-                    "get_current_players",
-                    "valid_moves",
-                    "check_game_over",
-                ]:
+                if all(
+                    s not in reply
+                    for s in [
+                        "get_current_turn",
+                        "get_current_players",
+                        "valid_moves",
+                        "check_game_over",
+                        "get_game_logs",
+                    ]
+                ):
                     print(f"Received: {reply}")  # Debug print
 
                 if not data:
@@ -172,7 +175,8 @@ try:
                         chat_database.store_chat_message(current_player, "Player Turn", message)
 
                     elif reply.startswith("get_game_logs"):
-                        messages = chat_database.get_chatDisplay_messages()
+                        character = reply.split(";")[1]
+                        messages = chat_database.get_chatDisplay_messages(character)
                         conn.send(str.encode(f"{messages}"))
                         # print("Chat logs returned.")
 

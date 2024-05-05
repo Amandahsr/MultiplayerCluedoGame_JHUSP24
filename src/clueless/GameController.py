@@ -169,8 +169,9 @@ class GameController:
     # to be run at the start of a player's turn
     def valid_moves(self):  # moves goes to player or client to display
         if self.disapproval:
-            move = ["Disapproval"]
-            options = {"Disapproval": self.disapproval_cards}
+            move = ["Disprove"]
+            options = self.disapproval_cards
+
             return move, options
 
         else:
@@ -337,10 +338,26 @@ class GameController:
     def execute_move(self, move: str, option: str, chat_database, suggestion: Dict = None):
         correct = None
         accusation_triggered = False
-        if self.disapproval:
+
+        if move == "Disprove":
+            suggest_character = self.current_player.character
+            disprove_character = self.temp_current_player.character
+            targeted_characters = [suggest_character, disprove_character]
+            remaining_characters = [p.character for p in self.players if p.character not in targeted_characters]
+
+            # Add disproved card to chatDatabase of player who made suggestion/disproved
+            log_msg = f"{disprove_character} disproved {option}."
+            chat_database.store_chat_message(disprove_character, move, log_msg, targeted=targeted_characters)
+
+            # Declare who made the disprove
+            redacted_log_msg = f"{disprove_character} disproved."
+            chat_database.store_chat_message(disprove_character, move, redacted_log_msg, targeted=remaining_characters)
+
+            # Reset disprove status
             self.disapproval = False
             self.disapproval_cards = []
             self.temp_current_player = None
+
         else:
             if move == "Take Secret Passageway and Suggest":  # game state updated
                 self.current_player.set_location(option)
