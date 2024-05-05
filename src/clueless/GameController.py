@@ -455,11 +455,18 @@ class GameController:
                 if correct:
                     log_msg2 = f"{characterName} wins!"
                 else:
-                    log_msg2 = f"{characterName}'s accusation was wrong. They're out of the game."
-                    loser = self.current_player
-                    self.players.remove(loser)
-                    self.current_player = self.next_player(self.current_player)
-                    self.turn_order.remove(loser.id)
+                    # Only runs if more than 1 player is left in the game
+                    if len(self.players) > 1:
+                        log_msg2 = f"{characterName}'s accusation was wrong. They're out of the game."
+                        loser = self.current_player
+                        self.players.remove(loser)
+                        self.current_player = self.next_player(self.current_player)
+                        self.turn_order.remove(loser.id)
+                    # If the last player makes an incorrect accusation, the game is a tie
+                    else:
+                        log_msg2 = f"{characterName}'s accusation was wrong. They're out of the game."
+                        self.tie = True
+                        self.game_over = True
 
                 chat_database.store_chat_message(characterName, move, log_msg1)
                 chat_database.store_chat_message(characterName, move, log_msg2)
