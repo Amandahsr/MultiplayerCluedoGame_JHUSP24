@@ -63,7 +63,7 @@ try:
                         "get_game_logs",
                         "check_start",
                         "get_num_players",
-                        "get_available_characters"
+                        "get_available_characters",
                     ]
                 ):
                     print(f"Received: {reply}")  # Debug print

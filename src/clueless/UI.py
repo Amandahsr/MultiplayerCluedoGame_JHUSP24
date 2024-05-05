@@ -1,6 +1,7 @@
 import os
 from os import environ
 from typing import Dict, List
+import textwrap
 import pygame
 
 environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
@@ -279,11 +280,16 @@ class chatDisplay:
 
         # Render log messages
         for _, msg in enumerate(self.log_msgs):
-            chat_surface = self.log_font.render(msg, True, self.text_color)
+            # Wrap text to avoid long msgs
+            wrapped_msg = textwrap.wrap(msg, 80)
+            for sub_msg in wrapped_msg:
+                print(f"MSG: {sub_msg}")
+                chat_surface = self.log_font.render(sub_msg, True, self.text_color)
+                text_x = self.rect.x + 10
+                text_y += 20
 
-            # Calculate text coordinates
-            text_x = self.rect.x + 10
-            self.screen.blit(chat_surface, (text_x, text_y))
+                self.screen.blit(chat_surface, (text_x, text_y))
+
             text_y += 50
 
 

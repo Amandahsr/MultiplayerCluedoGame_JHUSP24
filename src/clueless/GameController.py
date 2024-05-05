@@ -78,7 +78,17 @@ class GameController:
             "Ballroom": ["Conservatory-Ballroom Hallway", "Billiard-Ballroom Hallway", "Ballroom-Kitchen Hallway"],
             "Kitchen": ["Ballroom-Kitchen Hallway", "Dining-Kitchen Hallway"],
         }
-        self.rooms = ["Study", "Hall", "Lounge", "Library", "Billiard Room", "Dining Room", "Conservatory", "Ballroom", "Kitchen"]
+        self.rooms = [
+            "Study",
+            "Hall",
+            "Lounge",
+            "Library",
+            "Billiard Room",
+            "Dining Room",
+            "Conservatory",
+            "Ballroom",
+            "Kitchen",
+        ]
         self.corner_rooms = ["Study", "Conservatory", "Lounge", "Kitchen"]
         self.hallways = [
             "Study-Library Hallway",
@@ -236,7 +246,7 @@ class GameController:
             num = 0
             adj_halls = self.board.get(self.current_player.location)  # adjacent hallways
             max = len(adj_halls)  # used to compare number of players in the adjacent halls
-            
+
             for i in self.players:  # check to see if hallways from the room are blocked
                 if (
                     i.location in adj_halls
@@ -260,10 +270,10 @@ class GameController:
                     options["Rooms_Passageway"] = ["Conservatory"]
                 elif self.current_player.location == "Conservatory":
                     options["Rooms_Passageway"] = ["Lounge"]
-            
+
             if self.current_player.moved == True:  # if player was moved to a room by another player via suggestion
                 moves.append("Suggest")  # stay in room and suggest
-            
+
             return moves, options
 
     # used by suggest function to determine who should disprove the suggestion next
@@ -296,11 +306,11 @@ class GameController:
                 disapproval_lst.append(suggestion.get("room"))
             if suggestion.get("weapon") in self.next_player(next).cards:
                 disapproval_lst.append(suggestion.get("weapon"))
-            
+
             # Break loop if player with ability to disprove found
             if len(disapproval_lst) != 0:
                 break
-            
+
             # moves to the next player
             next = self.next_player(next)
             num += 1
@@ -420,7 +430,7 @@ class GameController:
                     self.current_player.set_in_corner_room(True)
                 else:
                     self.current_player.set_in_corner_room(False)
-                
+
                 # Add current room to suggestion
                 suggestion["room"] = self.current_player.location
                 temp, self.disapproval_cards = self.suggest(suggestion)

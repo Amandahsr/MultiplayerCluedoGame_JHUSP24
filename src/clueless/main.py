@@ -446,7 +446,7 @@ class Client:
                                             )
                                         )
                                         start_y += 40
-                                
+
                                 elif button.msg == "Take Secret Passageway and Suggest":
                                     # Reset buttons to avoid rendering move buttons
                                     self.buttons = []
@@ -504,7 +504,7 @@ class Client:
                                     # if options are empty, nobody else can disprove, let player know
                                     if len(options) == 0:
                                         options.append("Nobody else disproved")
-                                    
+
                                     # Initialize disprove options buttons
                                     start_x = 900
                                     start_y = 460
@@ -521,7 +521,7 @@ class Client:
                                             )
                                         )
                                         start_y += 40
-                                
+
                                 elif button.msg == "Suggest":
                                     # Reset buttons to avoid rendering move buttons
                                     self.buttons = []
