@@ -41,8 +41,8 @@ class Client:
             "Hall",
             "Lounge",
             "Library",
-            "Billiard",
-            "Dining",
+            "Billiard Room",
+            "Dining Room",
             "Conservatory",
             "Ballroom",
             "Kitchen",
@@ -552,7 +552,7 @@ class Client:
                                                 suspect,
                                                 start_x,
                                                 start_y,
-                                                f"show_suggest_weapons;{button.msg};{room}",
+                                                f"show_suggest_weapons;{button.msg}; ",
                                                 BLACK,
                                             )
                                         )

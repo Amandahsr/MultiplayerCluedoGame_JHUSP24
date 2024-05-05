@@ -67,18 +67,18 @@ class GameController:
             "Hall": ["Study-Hall Hallway", "Hall-Billiard Hallway", "Hall-Lounge Hallway"],
             "Lounge": ["Hall-Lounge Hallway", "Lounge-Dining Hallway"],
             "Library": ["Study-Library Hallway", "Library-Billiard Hallway", "Library-Conservatory Hallway"],
-            "Billiard": [
+            "Billiard Room": [
                 "Hall-Billiard Hallway",
                 "Library-Billiard Hallway",
                 "Billiard-Ballroom Hallway",
                 "Billiard-Dining Hallway",
             ],
-            "Dining": ["Lounge-Dining Hallway", "Billiard-Dining Hallway", "Dining-Kitchen Hallway"],
+            "Dining Room": ["Lounge-Dining Hallway", "Billiard-Dining Hallway", "Dining-Kitchen Hallway"],
             "Conservatory": ["Library-Conservatory Hallway", "Conservatory-Ballroom Hallway"],
             "Ballroom": ["Conservatory-Ballroom Hallway", "Billiard-Ballroom Hallway", "Ballroom-Kitchen Hallway"],
             "Kitchen": ["Ballroom-Kitchen Hallway", "Dining-Kitchen Hallway"],
         }
-        self.rooms = ["Study", "Hall", "Lounge", "Library", "Billiard", "Dining", "Conservatory", "Ballroom", "Kitchen"]
+        self.rooms = ["Study", "Hall", "Lounge", "Library", "Billiard Room", "Dining Room", "Conservatory", "Ballroom", "Kitchen"]
         self.corner_rooms = ["Study", "Conservatory", "Lounge", "Kitchen"]
         self.hallways = [
             "Study-Library Hallway",
@@ -212,19 +212,19 @@ class GameController:
             elif self.current_player.location == "Hall-Lounge Hallway":
                 options["Rooms"] = ["Hall", "Lounge"]
             elif self.current_player.location == "Hall-Billiard Hallway":
-                options["Rooms"] = ["Hall", "Billiard"]
+                options["Rooms"] = ["Hall", "Billiard Room"]
             elif self.current_player.location == "Lounge-Dining Hallway":
-                options["Rooms"] = ["Library", "Dining"]
+                options["Rooms"] = ["Library", "Dining Room"]
             elif self.current_player.location == "Library-Billiard Hallway":
-                options["Rooms"] = ["Library", "Billiard"]
+                options["Rooms"] = ["Library", "Billiard Room"]
             elif self.current_player.location == "Billiard-Dining Hallway":
-                options["Rooms"] = ["Billiard", "Dining"]
+                options["Rooms"] = ["Billiard Room", "Dining Room"]
             elif self.current_player.location == "Library-Conservatory Hallway":
                 options["Rooms"] = ["Library", "Conservatory"]
             elif self.current_player.location == "Billiard-Ballroom Hallway":
-                options["Rooms"] = ["Billiard", "Ballroom"]
+                options["Rooms"] = ["Billiard Room", "Ballroom"]
             elif self.current_player.location == "Dining-Kitchen Hallway":
-                options["Rooms"] = ["Dining", "Kitchen"]
+                options["Rooms"] = ["Dining Room", "Kitchen"]
             elif self.current_player.location == "Conservatory-Ballroom Hallway":
                 options["Rooms"] = ["Conservatory", "Ballroom"]
             elif self.current_player.location == "Ballroom-Kitchen Hallway":
@@ -420,6 +420,9 @@ class GameController:
                     self.current_player.set_in_corner_room(True)
                 else:
                     self.current_player.set_in_corner_room(False)
+                
+                # Add current room to suggestion
+                suggestion["room"] = self.current_player.location
                 temp, self.disapproval_cards = self.suggest(suggestion)
                 self.disapproval = True
 
