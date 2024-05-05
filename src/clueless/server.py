@@ -61,6 +61,9 @@ try:
                         "valid_moves",
                         "check_game_over",
                         "get_game_logs",
+                        "check_start",
+                        "get_num_players",
+                        "get_available_characters"
                     ]
                 ):
                     print(f"Received: {reply}")  # Debug print
@@ -137,7 +140,6 @@ try:
                         # print("Current locations of players returned.")
 
                     elif reply.startswith(f"get_player_cards: {character_name}"):
-                        print(f"get_player_cards is called")
                         player_cards = None
                         for player in game_controller.players:
                             if player.character == character_name:
@@ -146,6 +148,7 @@ try:
                         # print("Player cards returned.")
 
                     elif reply.startswith(f"execute_move"):
+                        print(f"execute move is called: {reply}")
                         move = reply.split(";")[1]
                         option = reply.split(";")[2]
 

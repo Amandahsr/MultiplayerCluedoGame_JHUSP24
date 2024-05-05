@@ -43,7 +43,7 @@ class Client:
             "Library",
             "Billiard",
             "Dining",
-            "Conversatory",
+            "Conservatory",
             "Ballroom",
             "Kitchen",
         ]
@@ -320,7 +320,7 @@ class Client:
                 self.buttons2 = []
 
                 start_x = 900
-                start_y = 500
+                start_y = 460
                 for move in valid_moves:
                     move_text = str(move)
                     self.buttons.append(
@@ -328,7 +328,7 @@ class Client:
                             self.screen, player_options.screen_color, move_text, start_x, start_y, "show_options", BLACK
                         )
                     )
-                    start_y += 50
+                    start_y += 40
 
                 for button in self.buttons:
                     button.draw_button()
@@ -392,7 +392,7 @@ class Client:
 
                                     # Initialize available options buttons
                                     start_x = 900
-                                    start_y = 500
+                                    start_y = 460
                                     for option in options["Hallways"]:
                                         self.buttons_options.append(
                                             Button(
@@ -405,7 +405,7 @@ class Client:
                                                 BLACK,
                                             )
                                         )
-                                        start_y += 50
+                                        start_y += 40
 
                                 elif button.msg == "Pass":
                                     # Execute option move
@@ -429,11 +429,12 @@ class Client:
                                 elif button.msg == "Move To Room and Suggest":
                                     # Reset buttons to avoid rendering move buttons
                                     self.buttons = []
+                                    self.buttons2 = []
                                     buttons1_showed = True
 
                                     # Initialize room buttons
                                     start_x = 900
-                                    start_y = 500
+                                    start_y = 460
                                     for room in options["Rooms"]:
                                         self.buttons2.append(
                                             Button(
@@ -446,7 +447,30 @@ class Client:
                                                 BLACK,
                                             )
                                         )
-                                        start_y += 50
+                                        start_y += 40
+                                
+                                elif button.msg == "Take Secret Passageway and Suggest":
+                                    # Reset buttons to avoid rendering move buttons
+                                    self.buttons = []
+                                    self.buttons2 = []
+                                    buttons1_showed = True
+
+                                    # Initialize room buttons
+                                    start_x = 900
+                                    start_y = 460
+                                    for room in options["Rooms_Passageway"]:
+                                        self.buttons2.append(
+                                            Button(
+                                                self.screen,
+                                                player_options.screen_color,
+                                                room,
+                                                start_x,
+                                                start_y,
+                                                f"show_suggest_suspects;{button.msg};{room}",
+                                                BLACK,
+                                            )
+                                        )
+                                        start_y += 40
 
                                 elif button.msg == "Accuse":
                                     # Reset buttons to avoid rendering move buttons
@@ -457,7 +481,7 @@ class Client:
 
                                     # Initialize room buttons
                                     start_x = 900
-                                    start_y = 500
+                                    start_y = 460
                                     for room in self.available_rooms:
                                         self.buttons2.append(
                                             Button(
@@ -470,7 +494,7 @@ class Client:
                                                 BLACK,
                                             )
                                         )
-                                        start_y += 50
+                                        start_y += 40
 
                                 #                                 elif button.msg == "Accuse":
                                 #                                     print("Pressed Accuse button")
@@ -490,9 +514,13 @@ class Client:
                                     options_showed = True
                                     buttons1_showed = True
 
+                                    # if options are empty, nobody else can disprove, let player know
+                                    if len(options) == 0:
+                                        options.append("Nobody else disproved")
+                                    
                                     # Initialize disprove options buttons
                                     start_x = 900
-                                    start_y = 500
+                                    start_y = 460
                                     for disprove_selection in options:
                                         self.buttons_options.append(
                                             Button(
@@ -505,7 +533,30 @@ class Client:
                                                 BLACK,
                                             )
                                         )
-                                        start_y += 50
+                                        start_y += 40
+                                
+                                elif button.msg == "Suggest":
+                                    # Reset buttons to avoid rendering move buttons
+                                    self.buttons = []
+                                    self.buttons2 = []
+                                    buttons1_showed = True
+
+                                    # Initialize suspect buttons
+                                    start_x = 900
+                                    start_y = 460
+                                    for suspect in self.available_suspects:
+                                        self.buttons2.append(
+                                            Button(
+                                                self.screen,
+                                                player_options.screen_color,
+                                                suspect,
+                                                start_x,
+                                                start_y,
+                                                f"show_suggest_weapons;{button.msg};{room}",
+                                                BLACK,
+                                            )
+                                        )
+                                        start_y += 40
 
                             # For start button
                             else:
@@ -526,7 +577,7 @@ class Client:
 
                                     # Initialize suspects buttons
                                     start_x = 900
-                                    start_y = 500
+                                    start_y = 460
                                     for suspect in self.available_suspects:
                                         self.buttons2.append(
                                             Button(
@@ -539,7 +590,7 @@ class Client:
                                                 BLACK,
                                             )
                                         )
-                                        start_y += 50
+                                        start_y += 40
 
                                 elif button.command_function.startswith("show_suggest_weapons"):
                                     options_showed = True
@@ -556,7 +607,7 @@ class Client:
 
                                     # Initialize weapons buttons
                                     start_x = 900
-                                    start_y = 500
+                                    start_y = 460
                                     for weapon in self.available_weapons:
                                         self.buttons_options.append(
                                             Button(
@@ -569,7 +620,7 @@ class Client:
                                                 BLACK,
                                             )
                                         )
-                                        start_y += 50
+                                        start_y += 40
 
                     # Options button is clicked and execute move is called on
                     if show_options_button:

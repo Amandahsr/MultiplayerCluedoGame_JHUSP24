@@ -78,7 +78,7 @@ class GameController:
             "Ballroom": ["Conservatory-Ballroom Hallway", "Billiard-Ballroom Hallway", "Ballroom-Kitchen Hallway"],
             "Kitchen": ["Ballroom-Kitchen Hallway", "Dining-Kitchen Hallway"],
         }
-        self.rooms = ["Study", "Hall", "Lounge", "Library", "Billiard", "Dining", "Conversatory", "Ballroom", "Kitchen"]
+        self.rooms = ["Study", "Hall", "Lounge", "Library", "Billiard", "Dining", "Conservatory", "Ballroom", "Kitchen"]
         self.corner_rooms = ["Study", "Conservatory", "Lounge", "Kitchen"]
         self.hallways = [
             "Study-Library Hallway",
@@ -235,8 +235,8 @@ class GameController:
         if self.current_player.location in self.rooms:
             num = 0
             adj_halls = self.board.get(self.current_player.location)  # adjacent hallways
-            print(adj_halls)
             max = len(adj_halls)  # used to compare number of players in the adjacent halls
+            
             for i in self.players:  # check to see if hallways from the room are blocked
                 if (
                     i.location in adj_halls
@@ -245,21 +245,25 @@ class GameController:
                         i.location
                     )  # removes hall in player in hall because it is not valid to move to that hall
                     num += 1
+
             if num != max:  # comparing the number of players in adjacent hallways to the number of adjacent hallways
                 moves.append("Move To Hallway")
                 options["Hallways"] = adj_halls
+
             if self.current_player.location in self.corner_rooms:
                 moves.append("Take Secret Passageway and Suggest")
                 if self.current_player.location == "Study":
-                    options["Rooms_Passageway"] = "Kitchen"
+                    options["Rooms_Passageway"] = ["Kitchen"]
                 elif self.current_player.location == "Kitchen":
-                    options["Rooms_Passageway"] = "Study"
+                    options["Rooms_Passageway"] = ["Study"]
                 elif self.current_player.location == "Lounge":
-                    options["Rooms_Passageway"] = "Conversatory"
-                elif self.current_player.location == "Conversatory":
-                    options["Rooms_Passageway"] = "Lounge"
+                    options["Rooms_Passageway"] = ["Conservatory"]
+                elif self.current_player.location == "Conservatory":
+                    options["Rooms_Passageway"] = ["Lounge"]
+            
             if self.current_player.moved == True:  # if player was moved to a room by another player via suggestion
                 moves.append("Suggest")  # stay in room and suggest
+            
             return moves, options
 
     # used by suggest function to determine who should disprove the suggestion next
@@ -284,6 +288,7 @@ class GameController:
         cur = self.current_player
         next = self.next_player(cur)
         num = 0
+
         while num < (len(self.players) - 1):
             if suggestion.get("suspect") in self.next_player(next).cards:
                 disapproval_lst.append(suggestion.get("suspect"))
@@ -291,12 +296,14 @@ class GameController:
                 disapproval_lst.append(suggestion.get("room"))
             if suggestion.get("weapon") in self.next_player(next).cards:
                 disapproval_lst.append(suggestion.get("weapon"))
-            if len(disapproval_lst) != 0:  # if player can disapprove suggestion, break loop
+            
+            # Break loop if player with ability to disprove found
+            if len(disapproval_lst) != 0:
                 break
-            next = self.next_player(next)  # moves to the next player
+            
+            # moves to the next player
+            next = self.next_player(next)
             num += 1
-        # print(next.character)
-        # print(disapproval_lst)
 
         return (
             next,
@@ -340,6 +347,7 @@ class GameController:
         accusation_triggered = False
 
         if move == "Disprove":
+            print("Game controller registers disproves.")
             suggest_character = self.current_player.character
             disprove_character = self.temp_current_player.character
             targeted_characters = [suggest_character, disprove_character]
