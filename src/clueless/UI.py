@@ -283,7 +283,6 @@ class chatDisplay:
             # Wrap text to avoid long msgs
             wrapped_msg = textwrap.wrap(msg, 80)
             for sub_msg in wrapped_msg:
-                print(f"MSG: {sub_msg}")
                 chat_surface = self.log_font.render(sub_msg, True, self.text_color)
                 text_x = self.rect.x + 10
                 text_y += 20

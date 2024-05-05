@@ -293,13 +293,14 @@ class GameController:
     # need the suggestion from player selection, suggestion is assumed to be a dict
     # dict is assumed to be structure like self.cards field {'suspect' : 'Miss Peacock', 'weapon' : candlestick, 'Room' : 'Dining'}
     # return player who disapproved and options for disapproval, must be displayed
-    def disapprove_suggestion(self, suggestion):
+    def disapprove_suggestion(self, suggestion, chat_database):
+        print("Disprove suggestion registered by GameController")
         self.disapproval = True
         disapproval_lst = []
         cur = self.current_player
         next = self.next_player(cur)
         num = 0
-        while num < (len(self.players) - 2):
+        while num <= (len(self.players) - 2):
             if suggestion.get("suspect") in next.cards:
                 disapproval_lst.append(suggestion.get("suspect"))
             if suggestion.get("room") in next.cards:
@@ -310,13 +311,10 @@ class GameController:
                 break
             next = self.next_player(next)  # moves to the next player
             num += 1
+
+        print(f"Disapprove suggest has list: {disapproval_lst}")
         # print(next.character)
         # print(disapproval_lst)
-        if len(disapproval_lst) == 0:
-            log_msg = "No one could disapprove this suggestion."
-            self.disapproval = False
-            next = None
-            #chat_database.store_chat_message(log_msg)
 
         return (
             next,
@@ -325,7 +323,9 @@ class GameController:
 
     # handles the suggestion logic after a player selected their move, called during execute_move
     # suggestion is assumed to be in a dict specified above: {suspect:option_clicked, weapon:option_clicked, room:char_current_room}
-    def suggest(self, suggestion):  # need the suggestion from player selection, suggestion is assumed to be a dict
+    def suggest(
+        self, suggestion, chat_database
+    ):  # need the suggestion from player selection, suggestion is assumed to be a dict
         print("Suggest is executed.")
         for i in self.players:
             if i.character == suggestion.get("suspect"):
@@ -333,7 +333,8 @@ class GameController:
                 i.set_moved(True)
                 i.set_in_room(True)
                 break
-        n, d_lst = self.disapprove_suggestion(suggestion)
+        n, d_lst = self.disapprove_suggestion(suggestion, chat_database)
+        print(f"Suggest has dis list: {d_lst}")
         return n, d_lst
 
     # handles the accusation logic after a player selected their move, called during execute_move, returns true/false if accusation is correct
@@ -384,7 +385,7 @@ class GameController:
                 self.current_player.set_location(option)
                 self.current_player.set_in_room(True)
                 self.current_player.set_in_corner_room(True)
-                temp, self.disapproval_cards = self.suggest(suggestion)
+                temp, self.disapproval_cards = self.suggest(suggestion, chat_database)
 
                 # Store and display msg
                 passageway_dest = option
@@ -395,6 +396,12 @@ class GameController:
                 log_msg = f"{characterName} takes secret passageway into {passageway_dest} and suggested [{weapon}, {suspect}, {room}]."
                 chat_database.store_chat_message(characterName, move, log_msg)
 
+                if len(self.disapproval_cards) == 0:
+                    log_msg = "No one disproved the suggestion."
+                    self.disapproval = False
+                    self.temp_current_player = None
+                    chat_database.store_chat_message(self.current_player.character, "Disprove", log_msg)
+
             if move == "Move To Room and Suggest":
                 self.current_player.set_location(option)
                 self.current_player.set_in_room(True)
@@ -402,7 +409,10 @@ class GameController:
                     self.current_player.set_in_corner_room(True)
                 else:
                     self.current_player.set_in_corner_room(False)
-                temp, self.disapproval_cards = self.suggest(suggestion)
+
+                temp, self.disapproval_cards = self.suggest(suggestion, chat_database)
+
+                print(f"Move has dis list: {self.disapproval_cards}")
 
                 # Store and display msg
                 passageway_dest = option
@@ -412,6 +422,12 @@ class GameController:
                 room = suggestion["room"]
                 log_msg = f"{characterName} moves into {passageway_dest} and suggested [{weapon}, {suspect}, {room}]."
                 chat_database.store_chat_message(characterName, move, log_msg)
+
+                if len(self.disapproval_cards) == 0:
+                    log_msg = "No one disproved the suggestion."
+                    self.disapproval = False
+                    self.temp_current_player = None
+                    chat_database.store_chat_message(self.current_player.character, "Disprove", log_msg)
 
             if move == "Move To Hallway":
                 self.current_player.set_location(option)
@@ -434,7 +450,7 @@ class GameController:
 
                 # Add current room to suggestion
                 suggestion["room"] = self.current_player.location
-                temp, self.disapproval_cards = self.suggest(suggestion)
+                temp, self.disapproval_cards = self.suggest(suggestion, chat_database)
 
                 # Store and display msg
                 characterName = self.current_player.character
@@ -443,6 +459,12 @@ class GameController:
                 room = suggestion["room"]
                 log_msg = f"{characterName} suggests [{weapon}, {suspect}, {room}]."
                 chat_database.store_chat_message(characterName, move, log_msg)
+
+                if len(self.disapproval_cards) == 0:
+                    log_msg = "No one disproved the suggestion."
+                    self.disapproval = False
+                    self.temp_current_player = None
+                    chat_database.store_chat_message(self.current_player.character, "Disprove", log_msg)
 
             if move == "Pass":
                 # Store and display msg
