@@ -298,7 +298,10 @@ class GameController:
         cur = self.current_player
         next = self.next_player(cur)
         num = 0
+<<<<<<< HEAD
 
+=======
+>>>>>>> parent of bb32d74 (Merge pull request #42 from Amandahsr/disapproval/suggestion-logic-fix)
         while num < (len(self.players) - 1):
             if suggestion.get("suspect") in self.next_player(next).cards:
                 disapproval_lst.append(suggestion.get("suspect"))
@@ -310,10 +313,17 @@ class GameController:
             # Break loop if player with ability to disprove found
             if len(disapproval_lst) != 0:
                 break
+<<<<<<< HEAD
 
             # moves to the next player
             next = self.next_player(next)
             num += 1
+=======
+            next = self.next_player(next)  # moves to the next player
+            num += 1
+        # print(next.character)
+        # print(disapproval_lst)
+>>>>>>> parent of bb32d74 (Merge pull request #42 from Amandahsr/disapproval/suggestion-logic-fix)
 
         return (
             next,
