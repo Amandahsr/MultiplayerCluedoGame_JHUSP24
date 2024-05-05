@@ -184,23 +184,12 @@ try:
                         # print("Chat logs returned.")
 
                     elif reply.startswith("check_game_over"):
-                        # print(f"Current flags: game_over: {game_controller.game_over}, win: {game_controller.win}, tie: {game_controller.tie}")
                         if game_controller.game_over and game_controller.win:
                             conn.send(str.encode(f"winner:{game_controller.winner}"))
                         elif game_controller.game_over and game_controller.tie:
                             conn.send(str.encode("tie"))
                         else:
                             conn.send(str.encode("continue"))
-
-                    #                    elif reply.startswith("accuse"):
-                    #                         print("Received accuse message from client")
-                    #                         print(f"Correct accuse answer is {answer}")
-
-                    #                         if game_controller.accuse() == True:
-                    #                             game_controller.winner = game_controller.current_player
-                    #                             game_controller.game_over = True
-                    #                             game_controller.win = True
-                    #                             conn.send(str.encode(f"winner:{game_controller.winner}"))
 
                     else:
                         print("Received: ", reply)

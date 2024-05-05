@@ -64,8 +64,6 @@ class Client:
             sys.exit(0)
 
         self.main_menu()
-        # self.end_game_tie()
-        # self.end_game_win("Miss Scarlet")
 
     # def clear_server_msgs(self):
     #     while self.s.recv(1024):
@@ -495,17 +493,6 @@ class Client:
                                             )
                                         )
                                         start_y += 40
-
-                                #                                 elif button.msg == "Accuse":
-                                #                                     print("Pressed Accuse button")
-                                #                                     self.s.send("accuse".encode())
-                                #                                     server_msg = self.s.recv(1024).decode("utf-8")
-                                #                                     print(f"Server message: {server_msg}")
-                                #                                     if server_msg.split(":")[0] == "winner":
-                                #                                         winner = server_msg.split(":")[1]
-                                #                                         self.end_game_win(winner)
-                                #                                     else:
-                                #                                         pass
 
                                 elif button.msg == "Disprove":
                                     # Reset buttons to avoid rendering move buttons
