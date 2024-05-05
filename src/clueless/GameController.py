@@ -294,26 +294,29 @@ class GameController:
     # dict is assumed to be structure like self.cards field {'suspect' : 'Miss Peacock', 'weapon' : candlestick, 'Room' : 'Dining'}
     # return player who disapproved and options for disapproval, must be displayed
     def disapprove_suggestion(self, suggestion):
+        self.disapproval = True
         disapproval_lst = []
         cur = self.current_player
         next = self.next_player(cur)
         num = 0
-
-        while num < (len(self.players) - 1):
-            if suggestion.get("suspect") in self.next_player(next).cards:
+        while num < (len(self.players) - 2):
+            if suggestion.get("suspect") in next.cards:
                 disapproval_lst.append(suggestion.get("suspect"))
-            if suggestion.get("room") in self.next_player(next).cards:
+            if suggestion.get("room") in next.cards:
                 disapproval_lst.append(suggestion.get("room"))
-            if suggestion.get("weapon") in self.next_player(next).cards:
+            if suggestion.get("weapon") in next.cards:
                 disapproval_lst.append(suggestion.get("weapon"))
-
-            # Break loop if player with ability to disprove found
-            if len(disapproval_lst) != 0:
+            if len(disapproval_lst) != 0:  # if player can disapprove suggestion, break loop
                 break
-
-            # moves to the next player
-            next = self.next_player(next)
+            next = self.next_player(next)  # moves to the next player
             num += 1
+        # print(next.character)
+        # print(disapproval_lst)
+        if len(disapproval_lst) == 0:
+            log_msg = "No one could disapprove this suggestion."
+            self.disapproval = False
+            next = None
+            #chat_database.store_chat_message(log_msg)
 
         return (
             next,
@@ -382,7 +385,6 @@ class GameController:
                 self.current_player.set_in_room(True)
                 self.current_player.set_in_corner_room(True)
                 temp, self.disapproval_cards = self.suggest(suggestion)
-                self.disapproval = True
 
                 # Store and display msg
                 passageway_dest = option
@@ -401,7 +403,6 @@ class GameController:
                 else:
                     self.current_player.set_in_corner_room(False)
                 temp, self.disapproval_cards = self.suggest(suggestion)
-                self.disapproval = True
 
                 # Store and display msg
                 passageway_dest = option
@@ -434,7 +435,6 @@ class GameController:
                 # Add current room to suggestion
                 suggestion["room"] = self.current_player.location
                 temp, self.disapproval_cards = self.suggest(suggestion)
-                self.disapproval = True
 
                 # Store and display msg
                 characterName = self.current_player.character
